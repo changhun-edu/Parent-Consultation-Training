@@ -237,6 +237,13 @@
         <span id="turn-count" style="color:var(--txt3)">1번째 상황</span>
       </div>
     </div>
+    <button id="eval-btn" onclick="requestEval()"
+      style="padding:7px 14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);
+             border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;
+             cursor:pointer;white-space:nowrap;flex-shrink:0;opacity:.5;pointer-events:none;"
+      title="대화를 진행하면 평가받기가 활성화됩니다">
+      📊 평가받기
+    </button>
   </div>
 </header>
 
@@ -291,7 +298,7 @@
   <div class="teacher-input-wrap" id="teacher-input-wrap">
     <div class="teacher-input-label">
       🧑‍🏫 <span>교사로서 직접 답변을 입력하세요</span>
-      <span style="margin-left:auto;font-size:11px;color:var(--txt3);font-weight:400">Ctrl+Enter 제출</span>
+      <span style="margin-left:auto;font-size:11px;color:var(--txt3);font-weight:400">Enter 전송 · Shift+Enter 줄바꿈</span>
     </div>
 
     <!-- 빠른 입력 힌트 -->
@@ -307,7 +314,7 @@
       rows="4"></textarea>
     <div class="teacher-input-footer">
       <span id="char-count">0자</span>
-      <button id="submit-btn" onclick="submitResponse()">답변 제출 →</button>
+      <button id="submit-btn" onclick="submitResponse()">전송 ↵</button>
     </div>
   </div>
 
@@ -351,6 +358,15 @@
       <!-- 턴별 점수 차트 -->
       <div class="end-turn-chart" id="end-turn-chart"
            style="justify-content:center;border-top:1px solid var(--border2);margin-top:16px;padding-top:16px"></div>
+    </div>
+
+    <!-- 턴별 모범 답변 비교 -->
+    <div id="end-model-section"
+         style="background:rgba(30,41,59,.7);border:1px solid var(--border);
+                border-radius:var(--radius);padding:16px 20px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:#a5b4fc;margin-bottom:14px">
+        💬 대화별 모범 답변 비교
+      </div>
     </div>
 
     <div class="end-section end-section--strengths" id="end-strengths-section">

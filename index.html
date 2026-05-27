@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>학부모 상담 훈련 시뮬레이터</title>
   <meta name="description" content="교사를 위한 학부모 상담 훈련 서비스. 실제 상황을 분기형 시나리오로 연습하고 즉각 피드백을 받으세요.">
-  <meta property="og:title" content="학부모 상담 훈련 시뮬레이터">
-  <meta property="og:description" content="분기형 시나리오로 학부모 상담을 안전하게 연습하세요.">
-  <meta property="og:type" content="website">
   <link rel="stylesheet" href="css/style.css">
   <style>
     /* ── 홈 전용 스타일 ─────────────────────────────── */
@@ -41,6 +38,27 @@
       font-size: 12px; color: #a5b4fc;
     }
 
+    /* ── 유목 안내 카드 ─────────────────────────────── */
+    .type-guide {
+      padding: 20px;
+      background: rgba(15,23,42,.5);
+      border-bottom: 1px solid var(--border);
+    }
+    .type-guide__inner {
+      max-width: 900px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+    }
+    .type-card {
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid;
+    }
+    .type-card__top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .type-card__label { font-size: 13px; font-weight: 800; }
+    .type-card__turns { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 8px; }
+    .type-card__desc { font-size: 11px; color: var(--txt3); line-height: 1.5; }
+
     /* ── 통계 바 ────────────────────────────────────── */
     .stats-bar {
       background: rgba(30,41,59,.7);
@@ -69,6 +87,10 @@
       display: flex; flex-wrap: wrap; gap: 8px;
       margin-bottom: 24px;
     }
+    .filter-section-label {
+      width: 100%; font-size: 11px; color: var(--txt3);
+      font-weight: 600; letter-spacing: .06em; margin-bottom: 2px;
+    }
     .filter-btn {
       padding: 6px 16px;
       background: transparent; border: 1px solid var(--border);
@@ -79,6 +101,13 @@
       background: rgba(99,102,241,.12);
       border-color: rgba(99,102,241,.4);
       color: #a5b4fc;
+    }
+    .filter-btn--type-일반.active   { background:rgba(34,197,94,.12);  border-color:rgba(34,197,94,.4);  color:#4ade80; }
+    .filter-btn--type-민감.active   { background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.4); color:#fbbf24; }
+    .filter-btn--type-고난도.active { background:rgba(239,68,68,.12);  border-color:rgba(239,68,68,.4);  color:#f87171; }
+    .filter-divider {
+      width: 1px; background: var(--border); align-self: stretch;
+      margin: 0 4px;
     }
 
     /* ── 시나리오 그리드 ────────────────────────────── */
@@ -144,14 +173,44 @@
 <section class="hero">
   <div class="hero__pill">🏫 현장 교사를 위한 훈련 시스템</div>
   <h1 class="hero__title">학부모 상담<br>시뮬레이터</h1>
-  <p class="hero__desc">실제 학교 현장의 상담 상황을 분기형 선택지로 연습하고 즉각적인 피드백을 받으세요.</p>
+  <p class="hero__desc">실제 학교 현장의 상담 상황을 단계별 시나리오로 연습하고 즉각적인 피드백을 받으세요.</p>
   <div class="hero__tags">
-    <span class="hero__tag">📋 4가지 카테고리</span>
-    <span class="hero__tag">🌿 AI 호출 없음</span>
-    <span class="hero__tag">⚡ 즉각 피드백</span>
+    <span class="hero__tag">🟢 일반 상황 6턴</span>
+    <span class="hero__tag">🟡 민감 상황 9턴</span>
+    <span class="hero__tag">🔴 고난도 민원 12턴</span>
     <span class="hero__tag">📊 기록 저장</span>
   </div>
 </section>
+
+<!-- 유목 안내 -->
+<div class="type-guide">
+  <div class="type-guide__inner">
+    <div class="type-card" style="background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.25)">
+      <div class="type-card__top">
+        <span style="font-size:18px">🟢</span>
+        <span class="type-card__label" style="color:#4ade80">일반 상황</span>
+        <span class="type-card__turns" style="background:rgba(34,197,94,.12);color:#4ade80">6턴</span>
+      </div>
+      <div class="type-card__desc">규정·절차·소지품 관련 항의<br>공감+사실+약속으로 단기 해결</div>
+    </div>
+    <div class="type-card" style="background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.25)">
+      <div class="type-card__top">
+        <span style="font-size:18px">🟡</span>
+        <span class="type-card__label" style="color:#fbbf24">민감 상황</span>
+        <span class="type-card__turns" style="background:rgba(245,158,11,.12);color:#fbbf24">9턴</span>
+      </div>
+      <div class="type-card__desc">교우 관계·안전사고 등<br>경청과 협력적 해결이 핵심</div>
+    </div>
+    <div class="type-card" style="background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.25)">
+      <div class="type-card__top">
+        <span style="font-size:18px">🔴</span>
+        <span class="type-card__label" style="color:#f87171">고난도 민원</span>
+        <span class="type-card__turns" style="background:rgba(239,68,68,.12);color:#f87171">12턴</span>
+      </div>
+      <div class="type-card__desc">교사 태도·차별 의심·집단 민원<br>방어 없는 경청, 공식 절차까지</div>
+    </div>
+  </div>
+</div>
 
 <!-- 통계 바 -->
 <div class="stats-bar">
@@ -193,7 +252,13 @@
 
     <!-- 필터 -->
     <div class="filter-row">
+      <span class="filter-section-label">▸ 난이도</span>
       <button class="filter-btn active" data-filter="all">전체</button>
+      <button class="filter-btn filter-btn--type-일반"   data-filter="일반">🟢 일반 상황</button>
+      <button class="filter-btn filter-btn--type-민감"   data-filter="민감">🟡 민감 상황</button>
+      <button class="filter-btn filter-btn--type-고난도" data-filter="고난도">🔴 고난도 민원</button>
+      <div class="filter-divider"></div>
+      <span class="filter-section-label">▸ 카테고리</span>
       <button class="filter-btn" data-filter="생활지도">📚 생활지도</button>
       <button class="filter-btn" data-filter="교우 관계">👥 교우 관계</button>
       <button class="filter-btn" data-filter="안전사고">🚑 안전사고</button>

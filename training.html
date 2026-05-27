@@ -6,14 +6,12 @@
   <title>학부모 상담 훈련</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* ── 훈련 전용 레이아웃 ─────────────────────────── */
     body { background: #0f172a; }
 
+    /* ── 헤더 ──────────────────────────────────── */
     .training-header {
-      background: rgba(15,23,42,.97);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 20px;
-      position: sticky; top: 0; z-index: 100;
+      background: rgba(15,23,42,.97); border-bottom: 1px solid var(--border);
+      padding: 12px 20px; position: sticky; top: 0; z-index: 100;
       backdrop-filter: blur(8px);
     }
     .training-header__inner {
@@ -27,185 +25,215 @@
     }
     .training-header__meta { font-size: 11px; color: var(--txt3); margin-top: 1px; }
 
-    /* ── 상황 배너 ──────────────────────────────────── */
+    /* ── 배너 ──────────────────────────────────── */
     .situation-banner {
-      margin: 14px 20px 0;
-      padding: 12px 16px;
-      background: rgba(99,102,241,.07);
-      border: 1px solid rgba(99,102,241,.2);
-      border-radius: var(--radius-sm);
-      font-size: 12px; color: var(--txt2); line-height: 1.6;
+      margin: 14px 20px 0; padding: 12px 16px;
+      background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.2);
+      border-radius: var(--radius-sm); font-size: 12px; color: var(--txt2); line-height: 1.6;
     }
     .situation-banner__label { color: #a5b4fc; font-weight: 700; margin-right: 4px; }
 
-    /* ── 감정 바 래퍼 ───────────────────────────────── */
+    /* ── 감정 바 ────────────────────────────────── */
     .emotion-wrap { margin: 10px 20px 0; }
 
-    /* ── 채팅 영역 ──────────────────────────────────── */
-    .chat-area {
-      max-width: 720px; margin: 0 auto;
-      padding: 16px 20px;
-    }
+    /* ── 채팅 영역 ──────────────────────────────── */
+    .chat-area { max-width: 720px; margin: 0 auto; padding: 16px 20px 48px; }
 
-    /* ── 학부모 메시지 ──────────────────────────────── */
-    .parent-bubble {
-      display: flex; gap: 10px; align-items: flex-end;
-      margin-bottom: 20px;
-    }
+    /* ── 과거 대화 히스토리 ─────────────────────── */
+    .history-exchange { margin-bottom: 20px; opacity: .65; }
+    .history-exchange:last-child { margin-bottom: 28px; }
+
+    /* ── 학부모 말풍선 ─────────────────────────── */
+    .parent-bubble { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 14px; }
     .parent-avatar {
       width: 38px; height: 38px; border-radius: 50%;
-      background: rgba(239,68,68,.15);
-      border: 2px solid rgba(239,68,68,.3);
+      background: rgba(239,68,68,.15); border: 2px solid rgba(239,68,68,.3);
       display: flex; align-items: center; justify-content: center;
       font-size: 18px; flex-shrink: 0;
     }
     .parent-bubble__body {
-      max-width: 80%;
-      padding: 13px 16px;
+      max-width: 80%; padding: 13px 16px;
       background: var(--bg2); border: 1px solid var(--border);
       border-radius: 16px 16px 16px 4px;
       font-size: 14px; line-height: 1.75; color: var(--txt);
     }
-    .parent-bubble__name {
-      font-size: 11px; color: var(--txt3); margin-bottom: 4px;
-      font-weight: 600;
-    }
+    .parent-bubble__name { font-size: 11px; color: var(--txt3); margin-bottom: 4px; font-weight: 600; }
 
-    /* ── 선택지 ─────────────────────────────────────── */
-    .choices-label {
-      font-size: 12px; color: var(--txt3);
-      margin-bottom: 10px; font-weight: 600;
+    /* ── 교사 답변 버블 (제출 후) ────────────────── */
+    .teacher-bubble {
+      display: none; justify-content: flex-end;
+      align-items: flex-end; gap: 10px; margin-bottom: 14px;
     }
-    .choices-list { display: flex; flex-direction: column; gap: 10px; }
-
-    .choice-btn {
-      display: flex; align-items: flex-start; gap: 12px;
-      padding: 14px 16px;
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: var(--radius); color: var(--txt);
-      text-align: left; font-size: 14px; line-height: 1.6;
-      transition: all .18s;
+    .teacher-bubble__body {
+      max-width: 80%; padding: 13px 16px;
+      background: linear-gradient(135deg, rgba(59,130,246,.18), rgba(99,102,241,.18));
+      border: 1px solid rgba(99,102,241,.35);
+      border-radius: 16px 16px 4px 16px;
+      font-size: 14px; line-height: 1.75; color: var(--txt);
     }
-    .choice-btn:not(:disabled):hover {
-      border-color: rgba(99,102,241,.5);
-      background: rgba(99,102,241,.07);
-      transform: translateX(3px);
+    .teacher-bubble__meta {
+      font-size: 11px; margin-top: 6px;
+      display: flex; align-items: center; justify-content: flex-end; gap: 8px;
     }
-    .choice-btn__num {
-      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
-      background: rgba(99,102,241,.15); border: 1px solid rgba(99,102,241,.25);
+    .teacher-bubble__score { font-weight: 800; font-size: 13px; }
+    .teacher-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(99,102,241,.18); border: 2px solid rgba(99,102,241,.35);
       display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 800; color: #a5b4fc;
+      font-size: 18px; flex-shrink: 0;
     }
 
-    /* 선택 후 상태 */
-    .choice-btn--selected { border-width: 2px !important; }
-    .choice-btn--selected.choice-btn--excellent { border-color: var(--green) !important; background: rgba(34,197,94,.07) !important; }
-    .choice-btn--selected.choice-btn--good      { border-color: var(--blue)  !important; background: rgba(59,130,246,.07) !important; }
-    .choice-btn--selected.choice-btn--fair      { border-color: var(--yellow)!important; background: rgba(245,158,11,.07)!important; }
-    .choice-btn--selected.choice-btn--poor      { border-color: var(--red)   !important; background: rgba(239,68,68,.07) !important; }
-    .choice-btn--dimmed   { opacity: .35; }
-
-    /* ── 피드백 패널 ────────────────────────────────── */
-    .feedback-panel {
-      display: none;
-      padding: 14px 18px;
-      border: 1px solid;
-      border-radius: var(--radius);
-      margin-top: 14px;
+    /* ── 입력 영역 ──────────────────────────────── */
+    .teacher-input-wrap { margin-bottom: 14px; }
+    .teacher-input-label {
+      font-size: 12px; color: var(--txt3); font-weight: 600;
+      margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
     }
-    .feedback-panel__quality {
-      font-size: 13px; font-weight: 800; margin-bottom: 6px;
+    .teacher-input-label span { color: #a5b4fc; }
+    #teacher-textarea {
+      width: 100%; min-height: 110px;
+      background: var(--bg2); border: 1px solid rgba(99,102,241,.3);
+      border-radius: var(--radius); padding: 14px 16px;
+      color: var(--txt); font-size: 14px; line-height: 1.7;
+      resize: vertical; outline: none; font-family: inherit;
+      transition: border-color .2s;
     }
-    .feedback-panel__tip { font-size: 13px; color: var(--txt); line-height: 1.6; }
+    #teacher-textarea:focus { border-color: rgba(99,102,241,.65); }
+    #teacher-textarea::placeholder { color: var(--txt3); }
+    .teacher-input-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 8px;
+    }
+    #char-count { font-size: 12px; color: var(--txt3); }
+    .hint-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 10px; }
+    .hint-tag {
+      font-size: 11px; padding: 3px 10px;
+      background: rgba(99,102,241,.08); border: 1px solid rgba(99,102,241,.2);
+      border-radius: 12px; color: #a5b4fc; cursor: pointer; transition: all .15s;
+    }
+    .hint-tag:hover { background: rgba(99,102,241,.18); }
+    #submit-btn {
+      padding: 10px 22px;
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      border: none; border-radius: var(--radius-sm);
+      color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: opacity .2s;
+    }
+    #submit-btn:hover { opacity: .88; }
+    #submit-btn:disabled { opacity: .4; cursor: not-allowed; }
 
-    /* ── 다음 버튼 ──────────────────────────────────── */
+    /* ── 평가 패널 ──────────────────────────────── */
+    .eval-panel {
+      display: none; margin-bottom: 12px;
+      background: rgba(30,41,59,.7); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .eval-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 20px; border-bottom: 1px solid var(--border2);
+    }
+    .eval-header__score { font-size: 32px; font-weight: 900; line-height: 1; }
+    .eval-header__grade { font-size: 14px; font-weight: 700; }
+    .eval-body { padding: 16px 20px; }
+    .eval-item { margin-bottom: 12px; }
+    .eval-item:last-child { margin-bottom: 0; }
+    .eval-item__header {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--txt2); margin-bottom: 4px;
+    }
+    .eval-item__score { font-weight: 800; font-size: 13px; }
+    .eval-bar-track {
+      height: 6px; background: rgba(30,41,59,.9);
+      border-radius: 3px; overflow: hidden; margin-bottom: 3px;
+    }
+    .eval-bar-fill { height: 100%; border-radius: 3px; transition: width .9s ease; }
+    .eval-hits { font-size: 11px; color: var(--txt3); }
+    .eval-feedback {
+      margin-top: 12px; padding: 12px 16px;
+      background: rgba(245,158,11,.07); border: 1px solid rgba(245,158,11,.2);
+      border-radius: var(--radius-sm); font-size: 13px; color: var(--txt2); line-height: 1.7;
+    }
+    .eval-feedback--good {
+      background: rgba(34,197,94,.07); border-color: rgba(34,197,94,.2);
+    }
+    .eval-fb-item { margin-bottom: 4px; }
+    .eval-fb-item:last-child { margin-bottom: 0; }
+
+    /* ── 모범 답변 패널 ─────────────────────────── */
+    .model-panel {
+      display: none; margin-bottom: 14px;
+      background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.25);
+      border-radius: var(--radius); padding: 18px 20px;
+    }
+    .model-panel__label { font-size: 12px; color: #a5b4fc; font-weight: 700; margin-bottom: 10px; }
+    .model-panel__text {
+      font-size: 14px; line-height: 1.8; color: var(--txt);
+      padding: 12px 16px; background: rgba(0,0,0,.2);
+      border-radius: var(--radius-sm); border-left: 3px solid var(--indigo);
+      margin-bottom: 10px; font-style: italic;
+    }
+    .model-panel__tip { font-size: 12px; color: var(--txt3); line-height: 1.5; }
+
+    /* ── 다음 버튼 ──────────────────────────────── */
     .next-btn {
-      display: none;
-      width: 100%; justify-content: center;
-      margin-top: 14px;
-      padding: 13px;
+      display: none; width: 100%; justify-content: center;
+      padding: 13px; margin-bottom: 14px;
       background: linear-gradient(135deg, var(--blue), var(--indigo));
       border: none; border-radius: var(--radius);
-      color: #fff; font-size: 14px; font-weight: 700;
-      gap: 8px;
+      color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; gap: 8px;
     }
     .next-btn:hover { opacity: .9; }
 
-    /* ── 종료 화면 ──────────────────────────────────── */
-    .end-screen {
-      display: none;
-      padding: 0 0 48px;
-    }
-
+    /* ── 종료 화면 ──────────────────────────────── */
+    .end-screen { display: none; padding-bottom: 48px; }
     .end-score-card {
-      padding: 28px 24px;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      margin-bottom: 14px;
-      text-align: center;
+      padding: 28px 24px; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-bottom: 14px; text-align: center;
     }
-    .end-emoji  { font-size: 48px; margin-bottom: 6px; display: block; }
-    .end-score  { font-size: 56px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+    .end-emoji   { font-size: 48px; margin-bottom: 6px; display: block; }
+    .end-score   { font-size: 56px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
     .end-label-badge {
-      display: inline-block;
-      padding: 4px 14px; border-radius: 12px; border: 1px solid;
+      display: inline-block; padding: 4px 14px; border-radius: 12px; border: 1px solid;
       font-size: 13px; font-weight: 700; margin-bottom: 14px;
     }
     .end-summary { font-size: 14px; color: var(--txt2); line-height: 1.7; }
-
+    .end-turn-chart {
+      display: flex; align-items: flex-end; gap: 6px;
+      height: 56px; padding: 0 4px; margin-top: 16px;
+    }
     .end-section {
-      padding: 14px 18px;
-      border-radius: var(--radius-sm);
-      margin-bottom: 12px;
+      padding: 14px 18px; border-radius: var(--radius-sm); margin-bottom: 12px;
     }
     .end-section__title { font-size: 12px; font-weight: 700; margin-bottom: 10px; }
     .end-section ul { padding-left: 20px; }
     .end-section li { font-size: 13px; color: var(--txt); line-height: 1.7; margin-bottom: 3px; }
-
     .end-section--strengths    { background: rgba(34,197,94,.06);  border: 1px solid rgba(34,197,94,.2); }
     .end-section--improvements { background: rgba(245,158,11,.06); border: 1px solid rgba(245,158,11,.2); }
     .end-section--next         { background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.2); }
-    .end-section--history      { background: var(--bg2);           border: 1px solid var(--border); }
-
     .end-section--strengths    .end-section__title { color: #4ade80; }
     .end-section--improvements .end-section__title { color: #fbbf24; }
     .end-section--next         .end-section__title { color: #a5b4fc; }
-    .end-section--history      .end-section__title { color: var(--txt2); }
-
     .end-next-text { font-size: 14px; color: #a5b4fc; font-weight: 600; line-height: 1.6; }
-
-    /* ── 히스토리 아이템 ────────────────────────────── */
-    .history-item { padding: 10px 0; border-bottom: 1px solid var(--border2); }
-    .history-item:last-child { border-bottom: none; }
-    .history-item__turn { font-size: 11px; color: var(--txt3); font-weight: 700; margin-bottom: 4px; }
-    .history-item__text { font-size: 12px; color: var(--txt2); margin: 5px 0; line-height: 1.5; }
-    .history-item__tip  { font-size: 11px; color: var(--txt3); line-height: 1.4; }
-
-    /* ── 종료 버튼 행 ───────────────────────────────── */
-    .end-btns { display: flex; gap: 10px; margin-top: 4px; }
+    .end-btns { display: flex; gap: 10px; }
     .end-btns .btn { flex: 1; justify-content: center; }
 
     @media (max-width: 480px) {
-      .parent-bubble__body { max-width: 90%; font-size: 13px; }
-      .choice-btn { font-size: 13px; }
+      .parent-bubble__body, .teacher-bubble__body { max-width: 90%; font-size: 13px; }
+      #teacher-textarea { font-size: 13px; }
     }
   </style>
 </head>
 <body>
 
-<!-- 훈련 헤더 -->
+<!-- 헤더 -->
 <header class="training-header">
   <div class="training-header__inner">
     <a href="index.html" class="btn btn--ghost btn--sm">← 목록</a>
     <div class="training-header__info">
       <div class="training-header__title" id="scenario-title">—</div>
       <div class="training-header__meta">
-        <span id="scenario-category" style="font-weight:700"></span>
-        &nbsp;·&nbsp;
-        <span id="difficulty-badge" class="badge"></span>
-        &nbsp;·&nbsp;
+        <span id="scenario-category" style="font-weight:700"></span>&nbsp;·&nbsp;
+        <span id="difficulty-badge" class="badge"></span>&nbsp;·&nbsp;
         <span id="turn-count" style="color:var(--txt3)">1번째 상황</span>
       </div>
     </div>
@@ -235,6 +263,9 @@
 <!-- 채팅 영역 -->
 <div class="chat-area container--narrow">
 
+  <!-- 누적 대화 히스토리 -->
+  <div id="chat-history-wrap"></div>
+
   <!-- 학부모 말풍선 -->
   <div class="parent-bubble">
     <div class="parent-avatar">👩</div>
@@ -244,16 +275,67 @@
     </div>
   </div>
 
-  <!-- 선택지 영역 -->
-  <div id="choices-wrap">
-    <div class="choices-label">🧑‍🏫 교사로서 어떻게 대응하시겠습니까?</div>
-    <div class="choices-list" id="choices-list"></div>
+  <!-- 교사 답변 버블 (제출 후 표시) -->
+  <div class="teacher-bubble" id="teacher-bubble">
+    <div class="teacher-bubble__body">
+      <div id="teacher-bubble-text"></div>
+      <div class="teacher-bubble__meta">
+        <span style="font-size:11px;color:var(--txt3)">내 답변</span>
+        <span class="teacher-bubble__score" id="teacher-bubble-score"></span>
+      </div>
+    </div>
+    <div class="teacher-avatar">🧑‍🏫</div>
   </div>
 
-  <!-- 피드백 패널 -->
-  <div class="feedback-panel" id="feedback-panel">
-    <div class="feedback-panel__quality" id="feedback-quality-label"></div>
-    <div class="feedback-panel__tip" id="feedback-tip"></div>
+  <!-- 입력 영역 -->
+  <div class="teacher-input-wrap" id="teacher-input-wrap">
+    <div class="teacher-input-label">
+      🧑‍🏫 <span>교사로서 직접 답변을 입력하세요</span>
+      <span style="margin-left:auto;font-size:11px;color:var(--txt3);font-weight:400">Ctrl+Enter 제출</span>
+    </div>
+
+    <!-- 빠른 입력 힌트 -->
+    <div class="hint-tags">
+      <span class="hint-tag" onclick="insertHint('많이 놀라셨겠어요.')">💛 많이 놀라셨겠어요</span>
+      <span class="hint-tag" onclick="insertHint('충분히 이해합니다.')">🤝 충분히 이해합니다</span>
+      <span class="hint-tag" onclick="insertHint('확인 후 연락드리겠습니다.')">📅 확인 후 연락</span>
+      <span class="hint-tag" onclick="insertHint('함께 방법을 찾아보겠습니다.')">🔧 함께 방법을</span>
+    </div>
+
+    <textarea id="teacher-textarea"
+      placeholder="학부모에게 어떻게 응답하시겠습니까?&#10;&#10;예시) 어머니, 많이 놀라셨겠어요. 상황을 확인해보고 오늘 중으로 연락드리겠습니다."
+      rows="4"></textarea>
+    <div class="teacher-input-footer">
+      <span id="char-count">0자</span>
+      <button id="submit-btn" onclick="submitResponse()">답변 제출 →</button>
+    </div>
+  </div>
+
+  <!-- 평가 패널 -->
+  <div class="eval-panel" id="eval-panel">
+    <div class="eval-header">
+      <div>
+        <div class="eval-header__score" id="eval-total">0점</div>
+        <div class="eval-header__grade" id="eval-grade"></div>
+      </div>
+      <!-- 미니 막대 -->
+      <div style="flex:1;margin-left:16px">
+        <div style="height:8px;background:rgba(30,41,59,.9);border-radius:4px;overflow:hidden">
+          <div id="eval-total-bar" style="height:100%;border-radius:4px;transition:width 1s ease"></div>
+        </div>
+      </div>
+    </div>
+    <div class="eval-body">
+      <div id="eval-breakdown"></div>
+      <div class="eval-feedback" id="eval-feedback" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- 모범 답변 패널 -->
+  <div class="model-panel" id="model-panel">
+    <div class="model-panel__label">💬 모범 답변</div>
+    <div class="model-panel__text" id="model-text"></div>
+    <div class="model-panel__tip" id="model-tip"></div>
   </div>
 
   <!-- 다음 버튼 -->
@@ -261,48 +343,34 @@
 
   <!-- 종료 화면 -->
   <div class="end-screen" id="end-screen">
-
-    <!-- 점수 카드 -->
     <div class="end-score-card">
       <span class="end-emoji" id="end-emoji">🌟</span>
       <div class="end-score" id="end-score">—</div>
       <div><span class="end-label-badge" id="end-label-badge">—</span></div>
-      <!-- end-label: JS setText 참조용 숨겨진 span -->
-      <span id="end-label" style="display:none"></span>
       <p class="end-summary" id="end-summary"></p>
+      <!-- 턴별 점수 차트 -->
+      <div class="end-turn-chart" id="end-turn-chart"
+           style="justify-content:center;border-top:1px solid var(--border2);margin-top:16px;padding-top:16px"></div>
     </div>
 
-    <!-- 강점 -->
     <div class="end-section end-section--strengths" id="end-strengths-section">
       <div class="end-section__title">✅ 잘한 점</div>
       <ul id="end-strengths-list"></ul>
     </div>
-
-    <!-- 개선점 -->
     <div class="end-section end-section--improvements" id="end-improvements-section">
       <div class="end-section__title">📝 개선할 점</div>
       <ul id="end-improvements-list"></ul>
     </div>
-
-    <!-- 다음 연습 팁 -->
     <div class="end-section end-section--next">
       <div class="end-section__title">🎯 다음 연습 포인트</div>
       <div class="end-next-text" id="end-next-practice"></div>
     </div>
 
-    <!-- 선택 히스토리 -->
-    <div class="end-section end-section--history">
-      <div class="end-section__title">📋 나의 선택 기록</div>
-      <div id="choice-history"></div>
-    </div>
-
-    <!-- 버튼 행 -->
     <div class="end-btns">
       <button class="btn btn--ghost" onclick="restartScenario()">🔄 다시 연습</button>
       <a href="index.html" class="btn btn--primary">🏠 다른 시나리오</a>
     </div>
-
-  </div><!-- /end-screen -->
+  </div>
 
 </div><!-- /chat-area -->
 

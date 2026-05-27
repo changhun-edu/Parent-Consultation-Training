@@ -25,19 +25,39 @@
     }
     .training-header__meta { font-size: 11px; color: var(--txt3); margin-top: 1px; }
 
+    /* ── 고정 컨텍스트 바 (상황 + 감정) ─────────── */
+    .context-bar {
+      position: sticky;
+      top: 62px;          /* training-header 높이 */
+      z-index: 90;
+      background: rgba(13,21,38,.97);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+      padding: 10px 20px;
+    }
+    .context-bar__inner {
+      max-width: 720px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
     /* ── 배너 ──────────────────────────────────── */
     .situation-banner {
-      margin: 14px 20px 0; padding: 12px 16px;
+      padding: 9px 14px;
       background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.2);
       border-radius: var(--radius-sm); font-size: 12px; color: var(--txt2); line-height: 1.6;
     }
     .situation-banner__label { color: #a5b4fc; font-weight: 700; margin-right: 4px; }
 
     /* ── 감정 바 ────────────────────────────────── */
-    .emotion-wrap { margin: 10px 20px 0; }
+    .emotion-wrap { /* 컨텍스트 바 내부에서 사용 — 별도 마진 불필요 */ }
 
     /* ── 채팅 영역 ──────────────────────────────── */
     .chat-area { max-width: 720px; margin: 0 auto; padding: 16px 20px 48px; }
+    /* 스크롤 시 고정 바(헤더 62 + 컨텍스트 바 ~108px)에 가리지 않도록 */
+    .parent-bubble, .history-exchange, .end-screen { scroll-margin-top: 180px; }
 
     /* ── 과거 대화 히스토리 ─────────────────────── */
     .history-exchange { margin-bottom: 20px; opacity: .65; }
@@ -247,23 +267,30 @@
   </div>
 </header>
 
-<!-- 상황 배너 -->
-<div class="situation-banner container--narrow">
-  <span class="situation-banner__label">📌 상황</span>
-  <span id="scenario-situation"></span>
-</div>
+<!-- 상황 + 감정 고정 바 -->
+<div class="context-bar">
+  <div class="context-bar__inner">
 
-<!-- 감정 바 -->
-<div class="emotion-wrap container--narrow">
-  <div class="emotion-bar">
-    <span class="emotion-bar__label">👩 <span id="parent-name-header">학부모</span> 감정</span>
-    <div class="emotion-bar__track">
-      <div class="emotion-bar__fill" id="emotion-fill" style="width:70%;background:#f59e0b"></div>
+    <!-- 상황 배너 -->
+    <div class="situation-banner">
+      <span class="situation-banner__label">📌 상황</span>
+      <span id="scenario-situation"></span>
     </div>
-    <span class="emotion-bar__text">
-      <span id="emotion-label" style="color:var(--yellow)">다소 불안</span>
-      &nbsp;<span id="emotion-value" style="color:var(--txt3);font-size:11px">70</span>
-    </span>
+
+    <!-- 감정 바 -->
+    <div class="emotion-wrap">
+      <div class="emotion-bar">
+        <span class="emotion-bar__label">👩 <span id="parent-name-header">학부모</span> 감정</span>
+        <div class="emotion-bar__track">
+          <div class="emotion-bar__fill" id="emotion-fill" style="width:70%;background:#f59e0b"></div>
+        </div>
+        <span class="emotion-bar__text">
+          <span id="emotion-label" style="color:var(--yellow)">다소 불안</span>
+          &nbsp;<span id="emotion-value" style="color:var(--txt3);font-size:11px">70</span>
+        </span>
+      </div>
+    </div>
+
   </div>
 </div>
 

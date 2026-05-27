@@ -79,7 +79,7 @@ function renderScenarios(list) {
 
       <div class="scenario-card__opening">
         <span class="scenario-card__opening-icon">💬</span>
-        <span class="scenario-card__opening-text">"${s.nodes[s.startNodeId].parentMessage.slice(0, 60)}…"</span>
+        <span class="scenario-card__opening-text">"${s.turns[0].parentMessage.slice(0, 60)}…"</span>
       </div>
 
       <div class="scenario-card__footer">

@@ -1,8 +1,14 @@
 /* =====================================================
    home.js  –  시나리오 목록 페이지 로직
+   (유목화 버전: 일반 6턴 / 민감 9턴 / 고난도 12턴)
    ===================================================== */
 
 const DIFFICULTY_LABEL = { 1: '⭐ 초급', 2: '⭐⭐ 중급', 3: '⭐⭐⭐ 고급' };
+const TYPE_LABEL = {
+  '일반':  { label: '일반 상황',  color: '#22c55e', turns: 6,  bg: 'rgba(34,197,94,.1)',  border: 'rgba(34,197,94,.3)'  },
+  '민감':  { label: '민감 상황',  color: '#f59e0b', turns: 9,  bg: 'rgba(245,158,11,.1)', border: 'rgba(245,158,11,.3)' },
+  '고난도':{ label: '고난도 민원', color: '#ef4444', turns: 12, bg: 'rgba(239,68,68,.1)',  border: 'rgba(239,68,68,.3)'  },
+};
 
 let allScenarios = [];
 let activeFilter = 'all';
@@ -35,9 +41,9 @@ function renderStats() {
   const avg     = total ? Math.round(history.reduce((a, h) => a + h.score, 0) / total) : 0;
   const best    = total ? Math.max(...history.map(h => h.score)) : 0;
 
-  setEl('stat-total',    total + '회');
-  setEl('stat-avg',      total ? avg + '점' : '-');
-  setEl('stat-best',     total ? best + '점' : '-');
+  setEl('stat-total',     total + '회');
+  setEl('stat-avg',       total ? avg + '점' : '-');
+  setEl('stat-best',      total ? best + '점' : '-');
   setEl('stat-scenarios', allScenarios.length + '개');
 }
 
@@ -45,7 +51,7 @@ function renderStats() {
 function renderScenarios(list) {
   const grid = document.getElementById('scenario-grid');
   if (!list.length) {
-    grid.innerHTML = '<p style="color:var(--txt3);text-align:center;padding:40px">해당 카테고리의 시나리오가 없습니다.</p>';
+    grid.innerHTML = '<p style="color:var(--txt3);text-align:center;padding:40px">해당 유형의 시나리오가 없습니다.</p>';
     return;
   }
 
@@ -58,6 +64,8 @@ function renderScenarios(list) {
                        bestScore >= 60 ? 'var(--blue)'  :
                        bestScore >= 40 ? 'var(--yellow)' : 'var(--red)';
 
+    const typeInfo = TYPE_LABEL[s.scenarioType] || TYPE_LABEL['일반'];
+
     return `
     <article class="scenario-card card card--hover anim-fade-in"
              style="animation-delay:${i * 60}ms; cursor:pointer;"
@@ -68,6 +76,7 @@ function renderScenarios(list) {
       <div class="scenario-card__top">
         <div class="scenario-card__meta">
           <span class="cat-icon" style="font-size:20px">${s.categoryIcon}</span>
+          <span class="badge" style="background:${typeInfo.bg};border:1px solid ${typeInfo.border};color:${typeInfo.color}">${typeInfo.label}</span>
           <span class="badge badge--d${s.difficulty}">${DIFFICULTY_LABEL[s.difficulty]}</span>
           ${bestScore != null ? `<span class="badge" style="background:${scoreColor}18;border:1px solid ${scoreColor}30;color:${scoreColor}">최고 ${bestScore}점</span>` : ''}
         </div>
@@ -83,23 +92,34 @@ function renderScenarios(list) {
       </div>
 
       <div class="scenario-card__footer">
-        <span style="font-size:12px;color:var(--txt3)">👤 ${s.parentName}</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;color:var(--txt3)">👤 ${s.parentName}</span>
+          <span style="font-size:11px;color:${typeInfo.color};background:${typeInfo.bg};border:1px solid ${typeInfo.border};padding:2px 8px;border-radius:10px">
+            💬 ${typeInfo.turns}턴
+          </span>
+        </div>
         <span class="btn btn--primary btn--sm">시작하기 →</span>
       </div>
     </article>`;
   }).join('');
 }
 
-/* ── 카테고리 필터 ──────────────────────────────────── */
+/* ── 카테고리/유형 필터 ──────────────────────────────── */
 function bindFilters() {
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       activeFilter = btn.dataset.filter;
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      const filtered = activeFilter === 'all'
-        ? allScenarios
-        : allScenarios.filter(s => s.category === activeFilter);
+
+      let filtered;
+      if (activeFilter === 'all') {
+        filtered = allScenarios;
+      } else if (['일반', '민감', '고난도'].includes(activeFilter)) {
+        filtered = allScenarios.filter(s => s.scenarioType === activeFilter);
+      } else {
+        filtered = allScenarios.filter(s => s.category === activeFilter);
+      }
       renderScenarios(filtered);
     });
   });
@@ -119,12 +139,13 @@ function renderHistoryPreview() {
   el.innerHTML = history.map(h => {
     const sc = allScenarios.find(s => s.id === h.scenarioId);
     const scoreColor = h.score >= 80 ? 'var(--green)' : h.score >= 60 ? 'var(--blue)' : h.score >= 40 ? 'var(--yellow)' : 'var(--red)';
+    const typeInfo = sc ? (TYPE_LABEL[sc.scenarioType] || {}) : {};
     return `
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;margin-bottom:8px">
       <span style="font-size:20px">${sc ? sc.categoryIcon : '📋'}</span>
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:600;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.title}</div>
-        <div style="font-size:11px;color:var(--txt3)">${h.date} · ${h.label}</div>
+        <div style="font-size:11px;color:var(--txt3)">${h.date} · ${h.label}${typeInfo.label ? ' · ' + typeInfo.label : ''}</div>
       </div>
       <div style="font-size:18px;font-weight:800;color:${scoreColor}">${h.score}점</div>
     </div>`;

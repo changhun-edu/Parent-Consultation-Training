@@ -1,1 +1,190 @@
+/* =====================================================
+   학부모 상담 훈련 - 공유 스타일시트
+   ===================================================== */
 
+/* ── 리셋 & 기본 ───────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0f172a;
+  --bg2:       #1e293b;
+  --bg3:       #0d1526;
+  --border:    rgba(51,65,85,.55);
+  --border2:   rgba(51,65,85,.3);
+  --txt:       #e2e8f0;
+  --txt2:      #94a3b8;
+  --txt3:      #8294a7;  /* ↑ #475569에서 변경 — AA 명암비 5.7:1 확보 */
+  --blue:      #3b82f6;
+  --indigo:    #6366f1;
+  --purple:    #8b5cf6;
+  --green:     #22c55e;
+  --yellow:    #f59e0b;
+  --red:       #ef4444;
+  --orange:    #f97316;
+  --pink:      #ec4899;
+  --cyan:      #06b6d4;
+  --radius:    14px;
+  --radius-sm: 9px;
+  --shadow:    0 4px 24px rgba(0,0,0,.4);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; }
+
+/* ── 공통 레이아웃 ───────────────────────────────────── */
+.container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+.container--narrow { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+
+/* ── 사이트 헤더 ───────────────────────────────────── */
+.site-header {
+  background: rgba(15,23,42,.97);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+.site-header__inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.site-header__logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.site-header__logo-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--blue), var(--indigo));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.site-header__title { font-size: 15px; font-weight: 800; color: var(--txt); }
+.site-header__sub   { font-size: 11px; color: var(--txt3); }
+
+/* ── 버튼 ───────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px;
+  border: none; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600;
+  transition: all .2s;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: none; }
+
+.btn--primary {
+  background: linear-gradient(135deg, var(--blue), var(--indigo));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(99,102,241,.3);
+}
+.btn--primary:hover { box-shadow: 0 6px 20px rgba(99,102,241,.4); }
+
+.btn--ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--txt2);
+}
+.btn--ghost:hover { border-color: var(--indigo); color: var(--txt); background: rgba(99,102,241,.08); }
+
+.btn--sm { padding: 7px 14px; font-size: 12px; }
+.btn--lg { padding: 14px 28px; font-size: 15px; }
+.btn--full { width: 100%; justify-content: center; }
+.btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+/* ── 배지 ───────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+}
+
+/* 난이도 배지 */
+.badge--d1 { background: rgba(34,197,94,.12);  border: 1px solid rgba(34,197,94,.25);  color: #4ade80; }
+.badge--d2 { background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.25); color: #fbbf24; }
+.badge--d3 { background: rgba(239,68,68,.12);  border: 1px solid rgba(239,68,68,.25);  color: #f87171; }
+
+/* 품질 배지 */
+.badge--excellent { background: rgba(34,197,94,.12);  border: 1px solid rgba(34,197,94,.25);  color: #4ade80; }
+.badge--good      { background: rgba(59,130,246,.12); border: 1px solid rgba(59,130,246,.25); color: #60a5fa; }
+.badge--fair      { background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.25); color: #fbbf24; }
+.badge--poor      { background: rgba(239,68,68,.12);  border: 1px solid rgba(239,68,68,.25);  color: #f87171; }
+
+/* ── 카드 ───────────────────────────────────────────── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all .2s;
+}
+.card--hover:hover {
+  border-color: var(--indigo);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(99,102,241,.12);
+}
+
+/* ── 감정 바 ───────────────────────────────────────── */
+.emotion-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: rgba(15,23,42,.7);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+}
+.emotion-bar__label { font-size: 12px; color: var(--txt3); white-space: nowrap; }
+.emotion-bar__track {
+  flex: 1;
+  height: 6px;
+  background: rgba(30,41,59,.9);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.emotion-bar__fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .9s ease, background-color .9s ease;
+}
+.emotion-bar__text {
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 36px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── 애니메이션 ─────────────────────────────────────── */
+@keyframes fadeIn  { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
+@keyframes fadeInL { from { opacity:0; transform:translateX(-10px) } to { opacity:1; transform:none } }
+@keyframes popIn   { from { opacity:0; transform:scale(.94) } to { opacity:1; transform:scale(1) } }
+@keyframes pulse   { 0%,100% { opacity:1 } 50% { opacity:.5 } }
+@keyframes bounce  { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-5px) } }
+
+.anim-fade-in  { animation: fadeIn .4s ease both; }
+.anim-fade-inL { animation: fadeInL .35s ease both; }
+.anim-pop-in   { animation: popIn .35s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* ── 반응형 ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .container, .container--narrow { padding: 0 14px; }
+}

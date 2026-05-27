@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>학부모 상담 훈련 시뮬레이터</title>
+  <meta name="description" content="교사를 위한 학부모 상담 훈련 서비스. 실제 상황을 분기형 시나리오로 연습하고 즉각 피드백을 받으세요.">
+  <meta property="og:title" content="학부모 상담 훈련 시뮬레이터">
+  <meta property="og:description" content="분기형 시나리오로 학부모 상담을 안전하게 연습하세요.">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── 홈 전용 스타일 ─────────────────────────────── */
+    .hero {
+      background: linear-gradient(160deg, #0f172a 0%, #1e293b 55%, #0f172a 100%);
+      padding: 52px 20px 44px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero__pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(99,102,241,.14);
+      border: 1px solid rgba(99,102,241,.28);
+      border-radius: 40px; padding: 7px 18px;
+      font-size: 12px; color: #a5b4fc; font-weight: 600;
+      margin-bottom: 22px;
+    }
+    .hero__title {
+      font-size: clamp(26px, 5vw, 42px);
+      font-weight: 900; line-height: 1.2;
+      background: linear-gradient(135deg, #60a5fa, #818cf8, #a78bfa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+    .hero__desc { font-size: 15px; color: var(--txt2); max-width: 480px; margin: 0 auto 24px; }
+    .hero__tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .hero__tag {
+      background: rgba(99,102,241,.1);
+      border: 1px solid rgba(99,102,241,.22);
+      border-radius: 20px; padding: 5px 14px;
+      font-size: 12px; color: #a5b4fc;
+    }
+
+    /* ── 통계 바 ────────────────────────────────────── */
+    .stats-bar {
+      background: rgba(30,41,59,.7);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+    }
+    .stats-bar__inner {
+      max-width: 900px; margin: 0 auto;
+      display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+    }
+    .stat-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg); border: 1px solid var(--border2);
+      border-radius: 10px; flex: 1; min-width: 120px; max-width: 200px;
+    }
+    .stat-item__icon { font-size: 18px; }
+    .stat-item__val  { font-size: 16px; font-weight: 800; color: var(--txt); }
+    .stat-item__lbl  { font-size: 11px; color: var(--txt3); }
+
+    /* ── 메인 콘텐츠 ────────────────────────────────── */
+    .main { padding: 36px 20px 60px; }
+
+    /* ── 필터 탭 ────────────────────────────────────── */
+    .filter-row {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 24px;
+    }
+    .filter-btn {
+      padding: 6px 16px;
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 20px; color: var(--txt2); font-size: 13px;
+      transition: all .18s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: rgba(99,102,241,.12);
+      border-color: rgba(99,102,241,.4);
+      color: #a5b4fc;
+    }
+
+    /* ── 시나리오 그리드 ────────────────────────────── */
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    /* ── 시나리오 카드 전용 ─────────────────────────── */
+    .scenario-card__top {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; margin-bottom: 10px; gap: 8px;
+    }
+    .scenario-card__meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .scenario-card__cat  { font-size: 12px; font-weight: 700; }
+    .scenario-card__title { font-size: 16px; font-weight: 800; color: var(--txt); margin-bottom: 8px; }
+    .scenario-card__situation {
+      font-size: 13px; color: var(--txt2); line-height: 1.6;
+      margin-bottom: 12px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .scenario-card__opening {
+      display: flex; gap: 8px;
+      padding: 10px 14px;
+      background: rgba(0,0,0,.2); border-radius: 10px;
+      margin-bottom: 14px;
+    }
+    .scenario-card__opening-icon { flex-shrink: 0; font-size: 15px; }
+    .scenario-card__opening-text { font-size: 12px; color: var(--txt2); font-style: italic; line-height: 1.5; }
+    .scenario-card__footer { display: flex; justify-content: space-between; align-items: center; }
+
+    /* ── 기록 섹션 ──────────────────────────────────── */
+    .section-title {
+      font-size: 15px; font-weight: 700; color: var(--txt2);
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .clear-btn {
+      margin-left: auto; padding: 4px 12px;
+      background: transparent; border: 1px solid rgba(239,68,68,.3);
+      border-radius: 8px; color: #f87171; font-size: 11px;
+    }
+    .clear-btn:hover { background: rgba(239,68,68,.08); }
+  </style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header class="site-header">
+  <div class="site-header__inner">
+    <div class="site-header__logo">
+      <div class="site-header__logo-icon">🎓</div>
+      <div>
+        <div class="site-header__title">학부모 상담 훈련</div>
+        <div class="site-header__sub">Teacher Consultation Trainer</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- 히어로 -->
+<section class="hero">
+  <div class="hero__pill">🏫 현장 교사를 위한 훈련 시스템</div>
+  <h1 class="hero__title">학부모 상담<br>시뮬레이터</h1>
+  <p class="hero__desc">실제 학교 현장의 상담 상황을 분기형 선택지로 연습하고 즉각적인 피드백을 받으세요.</p>
+  <div class="hero__tags">
+    <span class="hero__tag">📋 4가지 카테고리</span>
+    <span class="hero__tag">🌿 AI 호출 없음</span>
+    <span class="hero__tag">⚡ 즉각 피드백</span>
+    <span class="hero__tag">📊 기록 저장</span>
+  </div>
+</section>
+
+<!-- 통계 바 -->
+<div class="stats-bar">
+  <div class="stats-bar__inner">
+    <div class="stat-item">
+      <span class="stat-item__icon">📋</span>
+      <div>
+        <div class="stat-item__val" id="stat-scenarios">-</div>
+        <div class="stat-item__lbl">전체 시나리오</div>
+      </div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-item__icon">🎯</span>
+      <div>
+        <div class="stat-item__val" id="stat-total">0회</div>
+        <div class="stat-item__lbl">내 상담 횟수</div>
+      </div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-item__icon">📈</span>
+      <div>
+        <div class="stat-item__val" id="stat-avg">-</div>
+        <div class="stat-item__lbl">평균 점수</div>
+      </div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-item__icon">🌟</span>
+      <div>
+        <div class="stat-item__val" id="stat-best">-</div>
+        <div class="stat-item__lbl">최고 점수</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 메인 콘텐츠 -->
+<main class="main">
+  <div class="container">
+
+    <!-- 필터 -->
+    <div class="filter-row">
+      <button class="filter-btn active" data-filter="all">전체</button>
+      <button class="filter-btn" data-filter="생활지도">📚 생활지도</button>
+      <button class="filter-btn" data-filter="교우 관계">👥 교우 관계</button>
+      <button class="filter-btn" data-filter="안전사고">🚑 안전사고</button>
+      <button class="filter-btn" data-filter="교사 태도">🧑‍🏫 교사 태도</button>
+    </div>
+
+    <!-- 시나리오 그리드 -->
+    <div class="scenario-grid" id="scenario-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--txt3)">
+        시나리오를 불러오는 중…
+      </div>
+    </div>
+
+    <!-- 최근 기록 -->
+    <div>
+      <div class="section-title">
+        📊 최근 상담 기록
+        <button class="clear-btn" onclick="clearHistory()">기록 초기화</button>
+      </div>
+      <div id="history-preview"></div>
+    </div>
+
+  </div>
+</main>
+
+<footer style="padding:28px 20px 20px;text-align:center;">
+  <span style="font-size:11px;color:var(--txt3);letter-spacing:.04em;">
+    만든이 2026 최창훈
+  </span>
+</footer>
+
+<script src="js/home.js"></script>
+</body>
+</html>

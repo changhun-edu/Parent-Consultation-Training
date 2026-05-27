@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>학부모 상담 훈련</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── 훈련 전용 레이아웃 ─────────────────────────── */
+    body { background: #0f172a; }
+
+    .training-header {
+      background: rgba(15,23,42,.97);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+    .training-header__inner {
+      max-width: 720px; margin: 0 auto;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .training-header__info { flex: 1; min-width: 0; }
+    .training-header__title {
+      font-size: 15px; font-weight: 800; color: var(--txt);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .training-header__meta { font-size: 11px; color: var(--txt3); margin-top: 1px; }
+
+    /* ── 상황 배너 ──────────────────────────────────── */
+    .situation-banner {
+      margin: 14px 20px 0;
+      padding: 12px 16px;
+      background: rgba(99,102,241,.07);
+      border: 1px solid rgba(99,102,241,.2);
+      border-radius: var(--radius-sm);
+      font-size: 12px; color: var(--txt2); line-height: 1.6;
+    }
+    .situation-banner__label { color: #a5b4fc; font-weight: 700; margin-right: 4px; }
+
+    /* ── 감정 바 래퍼 ───────────────────────────────── */
+    .emotion-wrap { margin: 10px 20px 0; }
+
+    /* ── 채팅 영역 ──────────────────────────────────── */
+    .chat-area {
+      max-width: 720px; margin: 0 auto;
+      padding: 16px 20px;
+    }
+
+    /* ── 학부모 메시지 ──────────────────────────────── */
+    .parent-bubble {
+      display: flex; gap: 10px; align-items: flex-end;
+      margin-bottom: 20px;
+    }
+    .parent-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(239,68,68,.15);
+      border: 2px solid rgba(239,68,68,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .parent-bubble__body {
+      max-width: 80%;
+      padding: 13px 16px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 16px 16px 16px 4px;
+      font-size: 14px; line-height: 1.75; color: var(--txt);
+    }
+    .parent-bubble__name {
+      font-size: 11px; color: var(--txt3); margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    /* ── 선택지 ─────────────────────────────────────── */
+    .choices-label {
+      font-size: 12px; color: var(--txt3);
+      margin-bottom: 10px; font-weight: 600;
+    }
+    .choices-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .choice-btn {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px 16px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--txt);
+      text-align: left; font-size: 14px; line-height: 1.6;
+      transition: all .18s;
+    }
+    .choice-btn:not(:disabled):hover {
+      border-color: rgba(99,102,241,.5);
+      background: rgba(99,102,241,.07);
+      transform: translateX(3px);
+    }
+    .choice-btn__num {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(99,102,241,.15); border: 1px solid rgba(99,102,241,.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; color: #a5b4fc;
+    }
+
+    /* 선택 후 상태 */
+    .choice-btn--selected { border-width: 2px !important; }
+    .choice-btn--selected.choice-btn--excellent { border-color: var(--green) !important; background: rgba(34,197,94,.07) !important; }
+    .choice-btn--selected.choice-btn--good      { border-color: var(--blue)  !important; background: rgba(59,130,246,.07) !important; }
+    .choice-btn--selected.choice-btn--fair      { border-color: var(--yellow)!important; background: rgba(245,158,11,.07)!important; }
+    .choice-btn--selected.choice-btn--poor      { border-color: var(--red)   !important; background: rgba(239,68,68,.07) !important; }
+    .choice-btn--dimmed   { opacity: .35; }
+
+    /* ── 피드백 패널 ────────────────────────────────── */
+    .feedback-panel {
+      display: none;
+      padding: 14px 18px;
+      border: 1px solid;
+      border-radius: var(--radius);
+      margin-top: 14px;
+    }
+    .feedback-panel__quality {
+      font-size: 13px; font-weight: 800; margin-bottom: 6px;
+    }
+    .feedback-panel__tip { font-size: 13px; color: var(--txt); line-height: 1.6; }
+
+    /* ── 다음 버튼 ──────────────────────────────────── */
+    .next-btn {
+      display: none;
+      width: 100%; justify-content: center;
+      margin-top: 14px;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      border: none; border-radius: var(--radius);
+      color: #fff; font-size: 14px; font-weight: 700;
+      gap: 8px;
+    }
+    .next-btn:hover { opacity: .9; }
+
+    /* ── 종료 화면 ──────────────────────────────────── */
+    .end-screen {
+      display: none;
+      padding: 0 0 48px;
+    }
+
+    .end-score-card {
+      padding: 28px 24px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .end-emoji  { font-size: 48px; margin-bottom: 6px; display: block; }
+    .end-score  { font-size: 56px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+    .end-label-badge {
+      display: inline-block;
+      padding: 4px 14px; border-radius: 12px; border: 1px solid;
+      font-size: 13px; font-weight: 700; margin-bottom: 14px;
+    }
+    .end-summary { font-size: 14px; color: var(--txt2); line-height: 1.7; }
+
+    .end-section {
+      padding: 14px 18px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+    }
+    .end-section__title { font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+    .end-section ul { padding-left: 20px; }
+    .end-section li { font-size: 13px; color: var(--txt); line-height: 1.7; margin-bottom: 3px; }
+
+    .end-section--strengths    { background: rgba(34,197,94,.06);  border: 1px solid rgba(34,197,94,.2); }
+    .end-section--improvements { background: rgba(245,158,11,.06); border: 1px solid rgba(245,158,11,.2); }
+    .end-section--next         { background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.2); }
+    .end-section--history      { background: var(--bg2);           border: 1px solid var(--border); }
+
+    .end-section--strengths    .end-section__title { color: #4ade80; }
+    .end-section--improvements .end-section__title { color: #fbbf24; }
+    .end-section--next         .end-section__title { color: #a5b4fc; }
+    .end-section--history      .end-section__title { color: var(--txt2); }
+
+    .end-next-text { font-size: 14px; color: #a5b4fc; font-weight: 600; line-height: 1.6; }
+
+    /* ── 히스토리 아이템 ────────────────────────────── */
+    .history-item { padding: 10px 0; border-bottom: 1px solid var(--border2); }
+    .history-item:last-child { border-bottom: none; }
+    .history-item__turn { font-size: 11px; color: var(--txt3); font-weight: 700; margin-bottom: 4px; }
+    .history-item__text { font-size: 12px; color: var(--txt2); margin: 5px 0; line-height: 1.5; }
+    .history-item__tip  { font-size: 11px; color: var(--txt3); line-height: 1.4; }
+
+    /* ── 종료 버튼 행 ───────────────────────────────── */
+    .end-btns { display: flex; gap: 10px; margin-top: 4px; }
+    .end-btns .btn { flex: 1; justify-content: center; }
+
+    @media (max-width: 480px) {
+      .parent-bubble__body { max-width: 90%; font-size: 13px; }
+      .choice-btn { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 훈련 헤더 -->
+<header class="training-header">
+  <div class="training-header__inner">
+    <a href="index.html" class="btn btn--ghost btn--sm">← 목록</a>
+    <div class="training-header__info">
+      <div class="training-header__title" id="scenario-title">—</div>
+      <div class="training-header__meta">
+        <span id="scenario-category" style="font-weight:700"></span>
+        &nbsp;·&nbsp;
+        <span id="difficulty-badge" class="badge"></span>
+        &nbsp;·&nbsp;
+        <span id="turn-count" style="color:var(--txt3)">1번째 상황</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- 상황 배너 -->
+<div class="situation-banner container--narrow">
+  <span class="situation-banner__label">📌 상황</span>
+  <span id="scenario-situation"></span>
+</div>
+
+<!-- 감정 바 -->
+<div class="emotion-wrap container--narrow">
+  <div class="emotion-bar">
+    <span class="emotion-bar__label">👩 <span id="parent-name-header">학부모</span> 감정</span>
+    <div class="emotion-bar__track">
+      <div class="emotion-bar__fill" id="emotion-fill" style="width:70%;background:#f59e0b"></div>
+    </div>
+    <span class="emotion-bar__text">
+      <span id="emotion-label" style="color:var(--yellow)">다소 불안</span>
+      &nbsp;<span id="emotion-value" style="color:var(--txt3);font-size:11px">70</span>
+    </span>
+  </div>
+</div>
+
+<!-- 채팅 영역 -->
+<div class="chat-area container--narrow">
+
+  <!-- 학부모 말풍선 -->
+  <div class="parent-bubble">
+    <div class="parent-avatar">👩</div>
+    <div class="parent-bubble__body">
+      <div class="parent-bubble__name" id="parent-name-bubble">학부모</div>
+      <div id="parent-message">메시지를 불러오는 중…</div>
+    </div>
+  </div>
+
+  <!-- 선택지 영역 -->
+  <div id="choices-wrap">
+    <div class="choices-label">🧑‍🏫 교사로서 어떻게 대응하시겠습니까?</div>
+    <div class="choices-list" id="choices-list"></div>
+  </div>
+
+  <!-- 피드백 패널 -->
+  <div class="feedback-panel" id="feedback-panel">
+    <div class="feedback-panel__quality" id="feedback-quality-label"></div>
+    <div class="feedback-panel__tip" id="feedback-tip"></div>
+  </div>
+
+  <!-- 다음 버튼 -->
+  <button class="next-btn btn" id="next-btn">다음 상황으로 →</button>
+
+  <!-- 종료 화면 -->
+  <div class="end-screen" id="end-screen">
+
+    <!-- 점수 카드 -->
+    <div class="end-score-card">
+      <span class="end-emoji" id="end-emoji">🌟</span>
+      <div class="end-score" id="end-score">—</div>
+      <div><span class="end-label-badge" id="end-label-badge">—</span></div>
+      <!-- end-label: JS setText 참조용 숨겨진 span -->
+      <span id="end-label" style="display:none"></span>
+      <p class="end-summary" id="end-summary"></p>
+    </div>
+
+    <!-- 강점 -->
+    <div class="end-section end-section--strengths" id="end-strengths-section">
+      <div class="end-section__title">✅ 잘한 점</div>
+      <ul id="end-strengths-list"></ul>
+    </div>
+
+    <!-- 개선점 -->
+    <div class="end-section end-section--improvements" id="end-improvements-section">
+      <div class="end-section__title">📝 개선할 점</div>
+      <ul id="end-improvements-list"></ul>
+    </div>
+
+    <!-- 다음 연습 팁 -->
+    <div class="end-section end-section--next">
+      <div class="end-section__title">🎯 다음 연습 포인트</div>
+      <div class="end-next-text" id="end-next-practice"></div>
+    </div>
+
+    <!-- 선택 히스토리 -->
+    <div class="end-section end-section--history">
+      <div class="end-section__title">📋 나의 선택 기록</div>
+      <div id="choice-history"></div>
+    </div>
+
+    <!-- 버튼 행 -->
+    <div class="end-btns">
+      <button class="btn btn--ghost" onclick="restartScenario()">🔄 다시 연습</button>
+      <a href="index.html" class="btn btn--primary">🏠 다른 시나리오</a>
+    </div>
+
+  </div><!-- /end-screen -->
+
+</div><!-- /chat-area -->
+
+<script src="js/training.js"></script>
+</body>
+</html>

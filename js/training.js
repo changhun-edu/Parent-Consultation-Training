@@ -14,32 +14,19 @@
 const DIFFICULTY_LABEL = { 1:'⭐ 초급', 2:'⭐⭐ 중급', 3:'⭐⭐⭐ 고급' };
 
 /* ── 평가 루브릭 ───────────────────────────────────── */
-// 채점: 기본 40점(15자↑) + 공감(13/25) + 해결(12/20) + 사실(8) + 후속(12) + 성실보너스(5) → 최대 100
 const RUBRIC = [
-  { key:'empathy', label:'공감 표현', icon:'💛', tiers:[13,25],
+  { key:'empathy',   label:'공감 표현', icon:'💛', max:30, perHit:12,
     words:['많이','충분히','이해합니다','이해해요','걱정','마음이','속상',
            '놀라셨겠','안타깝','힘드셨겠','당황하셨겠','그러셨겠','아쉬우셨',
-           '서운하셨겠','힘들었겠','속상하셨겠','충분히 이해','죄송',
-           '당황하셨','당황','놀라셨','많이 놀','얼마나','무겁습니다',
-           '마음이 무','불편하셨','걱정되','염려','힘드실','힘드셨',
-           '어머니 말씀','아버님 말씀','말씀 충분','무거워'] },
-  { key:'solution', label:'해결 방향', icon:'🔧', tiers:[12,20],
-    words:['확인','살펴보','이야기 나누','방법을','조치','지도하겠',
-           '함께','노력','챙기겠','처리하겠','파악하겠','점검',
-           '이야기해','이야기 나눠','이야기하겠','이야기를 나',
-           '반환','돌려드리','기회','어울릴','개선','따로','불러',
-           '설명하겠','안내','지원','도울','살피겠','최선','노력하겠',
-           '챙기','만들겠','활동','시간을 만','마련','방안'] },
-  { key:'fact', label:'사실 기반', icon:'📋', max:8, perHit:8,
-    words:['직접','확인했','상황을','당시','기록','목격','제가 보','처치','양호실',
-           '수업 중','체육 시간','보관했','건강 조사','매뉴얼','절차',
-           '처치 후','찰과상','안전공제','공제회','처치받'] },
-  { key:'followup', label:'후속 약속', icon:'📅', max:12, perHit:12,
-    words:['연락드리겠','연락드릴','문자','알려드리겠','알려드릴',
-           '말씀드리겠','다시 연락','확인하겠습니다','살펴보겠',
-           '이번 주','금요일','내일','바로','방과 후','오늘 중',
-           '확인하겠','살피겠','이번 주 안','다음 주','주에 한 번',
-           '전화드리겠','언제든지','상담 신청'] },
+           '서운하셨겠','힘들었겠','속상하셨겠','충분히 이해','죄송'] },
+  { key:'solution',  label:'해결 방향', icon:'🔧', max:25, perHit:9,
+    words:['확인','살펴보','이야기 나누','알려드리','연락드리','방법을','조치',
+           '지도하겠','함께','노력','챙기겠','처리하겠','파악하겠','점검'] },
+  { key:'fact',      label:'사실 기반', icon:'📋', max:20, perHit:8,
+    words:['직접','확인했','상황을','당시','기록','목격','제가 보','처치','양호실'] },
+  { key:'followup',  label:'후속 약속', icon:'📅', max:15, perHit:9,
+    words:['연락드리겠','문자','알려드리겠','다시 연락','확인하겠습니다',
+           '살펴보겠','이번 주','금요일','내일','바로'] },
   { key:'defensive', label:'방어적 표현', icon:'⚠️', max:0, perHit:-15, penalty:true,
     words:['규정상','원래 그런','어쩔 수 없','흔한','경미한','별거 아','그런 사실이 없',
            '아닌데요','저는 잘못이','당연히'] },
@@ -185,18 +172,11 @@ function submitResponse() {
   $('submit-btn').disabled = true;
   $('teacher-input-wrap').style.display = 'none';
 
-  // 점수 계산
-  const turn  = state.scenario.turns[state.turnIndex];
-  const evalResult = evaluateInput(text, turn);
-  const score = evalResult.score;
+  // 점수 계산 (배경 처리, 화면에 즉시 표시 안 함)
+  const turn   = state.scenario.turns[state.turnIndex];
+  const score  = evaluateInput(text, turn);
   state.allScores.push(score);
-  state.turnHistory.push({
-    parentMsg:    turn.parentMessage,
-    teacherInput: text,
-    score:        evalResult.score,
-    breakdown:    evalResult.breakdown,
-    lengthBonus:  evalResult.lengthBonus,
-  });
+  state.turnHistory.push({ parentMsg: turn.parentMessage, teacherInput: text, score });
 
   // 감정 바만 업데이트
   const delta = score >= 70 ? -18 : score >= 40 ? 3 : 14;
@@ -257,44 +237,17 @@ function appendToHistory(parentMsg, teacherInput, score) {
 }
 
 /* ════════════════════════════════════════════════════
-   키워드 자동 평가  →  { score, breakdown, lengthBonus }
+   키워드 자동 평가
    ════════════════════════════════════════════════════ */
-function evaluateInput(text) {
-  if (text.length < 15) return { score: 0, breakdown: [], lengthBonus: 0 };
-
-  let total = 40;
-  const breakdown = [];
-
+function evaluateInput(text, turn) {
+  let total = 0;
   for (const cfg of RUBRIC) {
-    const hitWords = cfg.words.filter(w => text.includes(w));
-    const hits     = hitWords.length;
-    let pts;
-
-    if (cfg.penalty) {
-      pts = hits * cfg.perHit;
-    } else if (cfg.tiers) {
-      pts = hits === 0 ? 0 : hits === 1 ? cfg.tiers[0] : cfg.tiers[1];
-    } else {
-      pts = Math.min(cfg.max, hits * cfg.perHit);
-    }
-
-    total += pts;
-    breakdown.push({
-      key:      cfg.key,
-      label:    cfg.label,
-      icon:     cfg.icon,
-      maxPts:   cfg.penalty ? 0 : (cfg.tiers ? cfg.tiers[1] : cfg.max),
-      earned:   pts,
-      hits:     hits,
-      hitWords: hitWords.slice(0, 3),
-      penalty:  !!cfg.penalty,
-    });
+    const hits = cfg.words.filter(w => text.includes(w));
+    const raw  = Math.min(Math.abs(cfg.max), hits.length * Math.abs(cfg.perHit));
+    total += cfg.penalty ? -raw : raw;
   }
-
-  const lengthBonus = text.length >= 60 ? 5 : 0;
-  total += lengthBonus;
-
-  return { score: Math.max(0, Math.min(100, total)), breakdown, lengthBonus };
+  if (text.length < 20) total = Math.floor(total * 0.6);
+  return Math.max(0, Math.min(100, total));
 }
 
 /* ════════════════════════════════════════════════════
@@ -382,134 +335,34 @@ function showEndScreen() {
     </div>`;
   }).join('');
 
-  // ── 턴별 내 답변 ↔ 모범 답변 비교 카드 ──────────────
+  // ── 턴별 모범 답변 섹션 ──────────────────────────
   const modelSection = $('end-model-section');
   if (modelSection) {
-    // 기존 내용 비우기
-    modelSection.innerHTML = '';
-
-    // 섹션 제목
-    const secTitle = document.createElement('div');
-    secTitle.style.cssText = 'font-size:13px;font-weight:700;color:#a5b4fc;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #334155';
-    secTitle.textContent = '💬 대화별 내 답변 · 모범 답변 비교';
-    modelSection.appendChild(secTitle);
-
-    const FEEDBACK = {
-      empathy:  '"많이 놀라셨겠어요", "충분히 이해합니다" 같은 공감 표현으로 마음을 먼저 받아주세요.',
-      solution: '"확인하겠습니다", "이야기 나눠보겠습니다" 같은 구체적인 행동 계획을 제시해보세요.',
-      fact:     '상황·처치 내용·경위 등 객관적 사실을 함께 설명하면 신뢰감이 높아져요.',
-      followup: '"연락드리겠습니다", "금요일까지 알려드릴게요" 등 명확한 후속 약속을 추가해보세요.',
-    };
-
-    state.turnHistory.forEach(function(h, i) {
-      const turn = state.scenario.turns[i];
-      if (!turn) return;
-
+    modelSection.innerHTML = state.turnHistory.map((h, i) => {
+      const turn  = state.scenario.turns[i];
+      if (!turn) return '';
       const sc    = h.score;
-      const scCol = sc >= 80 ? '#22c55e' : sc >= 60 ? '#3b82f6' : sc >= 40 ? '#f59e0b' : '#ef4444';
-      const bd    = Array.isArray(h.breakdown) ? h.breakdown : [];
-
-      // 카드 컨테이너
-      const card = document.createElement('div');
-      card.style.cssText = 'margin-bottom:14px;padding:16px 18px;background:#0d1526;border:1px solid #334155;border-radius:12px';
-
-      // ① 헤더
-      const hdr = document.createElement('div');
-      hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:10px';
-      hdr.innerHTML = '<span style="font-size:11px;color:#8294a7;font-weight:700">' + (i+1) + '번째 대화</span>'
-                    + '<span style="font-size:18px;font-weight:900;color:' + scCol + '">' + sc + '점</span>';
-      card.appendChild(hdr);
-
-      // ② 학부모 발언
-      const pDiv = document.createElement('div');
-      pDiv.style.cssText = 'font-size:12px;color:#94a3b8;padding:8px 12px;background:rgba(0,0,0,.25);border-radius:8px;font-style:italic;line-height:1.6;margin-bottom:12px';
-      pDiv.textContent = '👩 ' + h.parentMsg.slice(0, 80) + (h.parentMsg.length > 80 ? '…' : '');
-      card.appendChild(pDiv);
-
-      // ③ 내 답변 레이블
-      const myLabel = document.createElement('div');
-      myLabel.style.cssText = 'font-size:11px;color:#93c5fd;font-weight:700;margin-bottom:6px';
-      myLabel.textContent = '🧑‍🏫 내 답변';
-      card.appendChild(myLabel);
-
-      // ③ 내 답변 본문
-      const myBox = document.createElement('div');
-      myBox.style.cssText = 'font-size:13px;color:#e2e8f0;padding:12px 14px;background:#1a2f4a;border:1px solid #2d5a8e;border-radius:8px;line-height:1.75;margin-bottom:10px;word-break:keep-all;white-space:pre-wrap';
-      myBox.textContent = h.teacherInput || '(답변 없음)';
-      card.appendChild(myBox);
-
-      // ③ 루브릭 칩
-      if (bd.length > 0) {
-        const chipWrap = document.createElement('div');
-        chipWrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px';
-        bd.forEach(function(c) {
-          if (c.penalty && c.hits === 0) return;
-          const chip = document.createElement('span');
-          let bg, border, color, mark;
-          if (c.penalty) {
-            bg='rgba(239,68,68,.15)'; border='rgba(239,68,68,.4)'; color='#f87171'; mark='⚠️';
-          } else if (c.earned >= c.maxPts && c.maxPts > 0) {
-            bg='rgba(34,197,94,.15)';  border='rgba(34,197,94,.4)';  color='#4ade80'; mark='✅';
-          } else if (c.earned > 0) {
-            bg='rgba(245,158,11,.15)'; border='rgba(245,158,11,.4)'; color='#fbbf24'; mark='🟡';
-          } else {
-            bg='rgba(239,68,68,.08)';  border='rgba(239,68,68,.25)'; color='#f87171'; mark='❌';
-          }
-          chip.style.cssText = 'display:inline-flex;align-items:center;gap:3px;padding:3px 9px;'
-            + 'background:' + bg + ';border:1px solid ' + border + ';border-radius:12px;'
-            + 'font-size:11px;font-weight:700;color:' + color;
-          const pts = c.penalty ? c.earned + '점' : c.earned + '/' + c.maxPts + '점';
-          chip.textContent = mark + ' ' + c.label + ' ' + pts;
-          chipWrap.appendChild(chip);
-        });
-        if (h.lengthBonus) {
-          const lb = document.createElement('span');
-          lb.style.cssText = 'display:inline-flex;align-items:center;gap:3px;padding:3px 9px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.35);border-radius:12px;font-size:11px;font-weight:700;color:#a5b4fc';
-          lb.textContent = '⭐ 성실도 +5';
-          chipWrap.appendChild(lb);
-        }
-        card.appendChild(chipWrap);
-      }
-
-      // ③ 미달 피드백
-      const missing = bd.filter(function(c) { return !c.penalty && c.maxPts > 0 && c.earned < c.maxPts; });
-      if (missing.length === 0) {
-        const ok = document.createElement('div');
-        ok.style.cssText = 'font-size:12px;color:#4ade80;font-weight:600;margin-bottom:10px';
-        ok.textContent = '✅ 모든 평가 항목을 잘 포함한 답변이에요!';
-        card.appendChild(ok);
-      } else {
-        const fbBox = document.createElement('div');
-        fbBox.style.cssText = 'margin-bottom:10px;padding:10px 12px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px';
-        missing.forEach(function(c) {
-          const row = document.createElement('div');
-          row.style.cssText = 'margin-bottom:5px;font-size:12px;color:#94a3b8;line-height:1.55';
-          row.innerHTML = '<span style="color:#fbbf24;font-weight:700">' + c.icon + ' ' + c.label + '</span> — ' + (FEEDBACK[c.key] || '');
-          fbBox.appendChild(row);
-        });
-        card.appendChild(fbBox);
-      }
-
-      // ④ 모범 답변 레이블
-      const modLabel = document.createElement('div');
-      modLabel.style.cssText = 'font-size:11px;color:#c4b5fd;font-weight:700;margin-bottom:6px';
-      modLabel.textContent = '💬 모범 답변';
-      card.appendChild(modLabel);
-
-      // ④ 모범 답변 본문
-      const modBox = document.createElement('div');
-      modBox.style.cssText = 'font-size:13px;color:#e2e8f0;padding:12px 14px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);border-left:3px solid #6366f1;border-radius:0 8px 8px 0;line-height:1.75;margin-bottom:8px;word-break:keep-all;white-space:pre-wrap';
-      modBox.textContent = turn.modelAnswer;
-      card.appendChild(modBox);
-
-      // ④ 팁
-      const tipDiv = document.createElement('div');
-      tipDiv.style.cssText = 'font-size:12px;color:#8294a7;line-height:1.55';
-      tipDiv.textContent = turn.tip;
-      card.appendChild(tipDiv);
-
-      modelSection.appendChild(card);
-    });
+      const scCol = sc >= 70 ? '#22c55e' : sc >= 40 ? '#f59e0b' : '#ef4444';
+      return `
+      <div style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border2)">
+        <div style="font-size:11px;color:var(--txt3);margin-bottom:8px;font-weight:700">
+          ${i+1}번째 대화
+          <span style="color:${scCol};margin-left:6px">${sc}점</span>
+        </div>
+        <div style="font-size:12px;color:var(--txt2);margin-bottom:6px;font-style:italic">
+          학부모: "${escHtml(h.parentMsg.slice(0,60))}${h.parentMsg.length>60?'…':''}"
+        </div>
+        <div style="font-size:11px;color:#93c5fd;font-weight:700;margin:8px 0 4px">🧑‍🏫 내 답변</div>
+        <div style="font-size:13px;color:#e2e8f0;padding:10px 14px;background:#152740;border:2px solid #2563eb;border-radius:8px;margin-bottom:8px;line-height:1.7">${escHtml(h.teacherInput||'')}</div>
+        <div style="font-size:11px;color:#c4b5fd;font-weight:700;margin-bottom:4px">💬 모범 답변</div>
+        <div style="font-size:13px;color:var(--txt);padding:10px 14px;
+                    background:rgba(99,102,241,.07);border-left:3px solid #6366f1;
+                    border-radius:0 8px 8px 0;margin-bottom:6px;line-height:1.6">
+          ${escHtml(turn.modelAnswer)}
+        </div>
+        <div style="font-size:11px;color:var(--txt3)">${turn.tip}</div>
+      </div>`;
+    }).join('');
   }
 
   // 강점 / 개선점

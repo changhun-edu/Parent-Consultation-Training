@@ -388,12 +388,13 @@ function showEndScreen() {
   // ── 턴별 내 답변 ↔ 모범 답변 비교 카드 ──────────────
   const modelSection = $('end-model-section');
   if (modelSection) {
-    const FEEDBACK = {
-      empathy:  '"많이 놀라셨겠어요", "충분히 이해합니다" 같은 공감 표현으로 마음을 먼저 받아주세요.',
-      solution: '"확인하겠습니다", "이야기 나눠보겠습니다" 같은 구체적인 행동 계획을 제시해보세요.',
-      fact:     '상황·처치 내용·경위 등 객관적 사실을 함께 설명하면 신뢰감이 높아져요.',
-      followup: '"연락드리겠습니다", "금요일까지 알려드릴게요" 등 명확한 후속 약속을 추가해보세요.',
-    };
+    try {
+      const FEEDBACK = {
+        empathy:  '"많이 놀라셨겠어요", "충분히 이해합니다" 같은 공감 표현으로 마음을 먼저 받아주세요.',
+        solution: '"확인하겠습니다", "이야기 나눠보겠습니다" 같은 구체적인 행동 계획을 제시해보세요.',
+        fact:     '상황·처치 내용·경위 등 객관적 사실을 함께 설명하면 신뢰감이 높아져요.',
+        followup: '"연락드리겠습니다", "금요일까지 알려드릴게요" 등 명확한 후속 약속을 추가해보세요.',
+      };
 
     modelSection.innerHTML =
       `<div style="font-size:12px;font-weight:700;color:#a5b4fc;margin-bottom:14px">💬 대화별 답변 비교 & 피드백</div>` +
@@ -458,49 +459,53 @@ function showEndScreen() {
                ⚠️ 방어적 표현이 감지됐어요: <strong>${escHtml(defItem.hitWords.join(', '))}</strong>
              </div>` : '';
 
-        return `
-        <div style="margin-bottom:14px;padding:16px 18px;
-                    background:rgba(15,23,42,.6);border:1px solid var(--border2);border-radius:12px">
+        const myAnswer = String(h.teacherInput || '(답변 없음)');
+        const modelAns = String(turn.modelAnswer || '');
+        const tipText  = String(turn.tip || '');
 
-          <!-- 헤더 -->
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <span style="font-size:11px;color:var(--txt3);font-weight:700">${i+1}번째 대화</span>
-            <span style="font-size:18px;font-weight:900;color:${scCol}">${sc}점</span>
-          </div>
+        return (
+          '<div style="margin-bottom:14px;padding:16px 18px;' +
+          'background:#0d1526;border:1px solid #334155;border-radius:12px">' +
 
-          <!-- 학부모 발언 -->
-          <div style="font-size:12px;color:var(--txt3);padding:7px 12px;
-                      background:rgba(0,0,0,.2);border-radius:8px;
-                      font-style:italic;line-height:1.55;margin-bottom:12px">
-            👩 "${escHtml(h.parentMsg.slice(0,80))}${h.parentMsg.length>80?'…':''}"
-          </div>
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+              '<span style="font-size:11px;color:#8294a7;font-weight:700">' + (i+1) + '번째 대화</span>' +
+              '<span style="font-size:18px;font-weight:900;color:' + scCol + '">' + sc + '점</span>' +
+            '</div>' +
 
-          <!-- 내 답변 -->
-          <div style="margin-bottom:14px">
-            <div style="font-size:11px;color:#93c5fd;font-weight:700;margin-bottom:6px">👩‍🏫 내 답변</div>
-            <div style="font-size:13px;color:var(--txt);padding:10px 14px;
-                        background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);
-                        border-radius:8px;line-height:1.75;margin-bottom:8px;word-break:keep-all">
-              ${escHtml(h.teacherInput || '(답변 없음)')}
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:5px">${chips}${lbChip}</div>
-            ${feedbackHtml}${defHtml}
-          </div>
+            '<div style="font-size:12px;color:#8294a7;padding:7px 12px;' +
+            'background:rgba(0,0,0,.25);border-radius:8px;font-style:italic;' +
+            'line-height:1.55;margin-bottom:12px">' +
+              '👩 &ldquo;' + escHtml(h.parentMsg.slice(0,80)) + (h.parentMsg.length>80?'…':'') + '&rdquo;' +
+            '</div>' +
 
-          <!-- 모범 답변 -->
-          <div>
-            <div style="font-size:11px;color:#c4b5fd;font-weight:700;margin-bottom:6px">💬 모범 답변</div>
-            <div style="font-size:13px;color:var(--txt);padding:10px 14px;
-                        background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.25);
-                        border-left:3px solid #6366f1;border-radius:0 8px 8px 0;
-                        line-height:1.75;margin-bottom:8px;font-style:italic;word-break:keep-all">
-              ${escHtml(turn.modelAnswer)}
-            </div>
-            <div style="font-size:12px;color:var(--txt3);line-height:1.55">${turn.tip}</div>
-          </div>
+            '<div style="margin-bottom:14px">' +
+              '<div style="font-size:11px;color:#93c5fd;font-weight:700;margin-bottom:6px">🧑‍🏫 내 답변</div>' +
+              '<div style="font-size:13px;color:#e2e8f0;padding:10px 14px;' +
+              'background:#1e3a5f;border:1px solid #2d5a8e;' +
+              'border-radius:8px;line-height:1.75;margin-bottom:8px;word-break:keep-all">' +
+                escHtml(myAnswer) +
+              '</div>' +
+              '<div style="display:flex;flex-wrap:wrap;gap:5px">' + chips + lbChip + '</div>' +
+              feedbackHtml + defHtml +
+            '</div>' +
 
-        </div>`;
+            '<div>' +
+              '<div style="font-size:11px;color:#c4b5fd;font-weight:700;margin-bottom:6px">💬 모범 답변</div>' +
+              '<div style="font-size:13px;color:#e2e8f0;padding:10px 14px;' +
+              'background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);' +
+              'border-left:3px solid #6366f1;border-radius:0 8px 8px 0;' +
+              'line-height:1.75;margin-bottom:8px;font-style:italic;word-break:keep-all">' +
+                escHtml(modelAns) +
+              '</div>' +
+              '<div style="font-size:12px;color:#8294a7;line-height:1.55">' + tipText + '</div>' +
+            '</div>' +
+
+          '</div>'
+        );
       }).join('');
+    } catch(err) {
+      modelSection.innerHTML = '<div style="color:#f87171;padding:12px">렌더링 오류: ' + err.message + '</div>';
+    }
   }
 
   // 강점 / 개선점

@@ -382,9 +382,6 @@
     <div id="end-model-section"
          style="background:rgba(30,41,59,.7);border:1px solid var(--border);
                 border-radius:var(--radius);padding:16px 20px;margin-bottom:12px">
-      <div style="font-size:12px;font-weight:700;color:#a5b4fc;margin-bottom:14px">
-        💬 대화별 모범 답변 비교
-      </div>
     </div>
 
     <div class="end-section end-section--strengths" id="end-strengths-section">
@@ -442,6 +439,14 @@ const RUBRIC = [
     words:['규정상','원래 그런','어쩔 수 없','흔한','경미한','별거 아','그런 사실이 없',
            '아닌데요','저는 잘못이','당연히'] },
 ];
+
+/* ── 항목 설명 테이블 (전역) ────────────────────────── */
+const RD = {
+  empathy:  { p:'학부모 감정을 먼저 인정해야 대화가 열립니다',    ok:'학부모 감정을 충분히 공감했어요!',            half:'공감 표현이 있지만 감정을 더 직접 언급하면 좋아요.',  no:'학부모 감정에 대한 공감 표현이 빠져 있습니다.',   tip:'예) "많이 놀라셨겠어요", "충분히 이해합니다", "얼마나 속상하셨을까요"' },
+  solution: { p:'교사가 무엇을 할지 보여줘야 신뢰가 생깁니다',    ok:'구체적인 해결 방향을 잘 제시했어요!',           half:'행동 계획이 있지만 더 구체적으로 설명하면 좋아요.',   no:'구체적인 행동 계획이 빠져 있습니다.',             tip:'예) "확인해 보겠습니다", "함께 방법을 찾겠습니다", "이야기 나눠보겠습니다"' },
+  fact:     { p:'상황을 객관적으로 설명해야 오해가 생기지 않습니다', ok:'사실을 명확하게 전달했어요!',               half:'사실 기반 설명이 있지만 더 구체적이면 좋아요.',       no:'당시 상황이나 경위 설명이 빠져 있습니다.',         tip:'예) "수업 중 메시지를 주고받아서", "양호실에서 처치 후", "당시 상황은..."' },
+  followup: { p:'언제·어떻게 연락할지 약속하면 불안이 줄어듭니다', ok:'명확한 후속 약속으로 신뢰를 줬어요!',          half:'약속이 있지만 구체적 시점을 추가하면 더 좋아요.',      no:'후속 연락이나 조치 약속이 빠져 있습니다.',         tip:'예) "오늘 방과 후 연락드리겠습니다", "금요일까지 문자로 알려드릴게요"' }
+};
 
 /* ── 게임 상태 ─────────────────────────────────────── */
 const state = {
@@ -623,52 +628,7 @@ function submitResponse() {
 function appendToHistory(parentMsg, teacherInput, score) {
   var wrap  = $('chat-history-wrap');
   var scCol = score >= 80 ? '#22c55e' : score >= 60 ? '#3b82f6' : score >= 40 ? '#f59e0b' : '#ef4444';
-
-  /* ── 항목 설명 테이블 ── */
-  var RD = {
-    empathy:  { p:'학부모 감정을 먼저 인정해야 대화가 열립니다', ok:'학부모 감정을 충분히 공감했어요!', half:'공감 표현이 있지만 감정을 더 직접 언급하면 좋아요.', no:'학부모 감정에 대한 공감 표현이 빠져 있습니다.', tip:'예) "많이 놀라셨겠어요", "충분히 이해합니다", "얼마나 속상하셨을까요"' },
-    solution: { p:'교사가 무엇을 할지 보여줘야 신뢰가 생깁니다', ok:'구체적인 해결 방향을 잘 제시했어요!', half:'행동 계획이 있지만 더 구체적으로 설명하면 좋아요.', no:'구체적인 행동 계획이 빠져 있습니다.', tip:'예) "확인해 보겠습니다", "함께 방법을 찾겠습니다", "이야기 나눠보겠습니다"' },
-    fact:     { p:'상황을 객관적으로 설명해야 오해가 생기지 않습니다', ok:'사실을 명확하게 전달했어요!', half:'사실 기반 설명이 있지만 더 구체적이면 좋아요.', no:'당시 상황이나 경위 설명이 빠져 있습니다.', tip:'예) "수업 중 메시지를 주고받아서", "양호실에서 처치 후", "당시 상황은..."' },
-    followup: { p:'언제·어떻게 연락할지 약속하면 불안이 줄어듭니다', ok:'명확한 후속 약속으로 신뢰를 줬어요!', half:'약속이 있지만 구체적 시점을 추가하면 더 좋아요.', no:'후속 연락이나 조치 약속이 빠져 있습니다.', tip:'예) "오늘 방과 후 연락드리겠습니다", "금요일까지 문자로 알려드릴게요"' }
-  };
-
-  /* ── breakdown을 여기서 직접 계산 ── */
-  var breakdown = [];
-  var lengthBonus = 0;
-  if (teacherInput && teacherInput.length >= 15) {
-    var total2 = 40;
-    for (var ri = 0; ri < RUBRIC.length; ri++) {
-      var cfg = RUBRIC[ri];
-      var hitWords = [];
-      for (var wi = 0; wi < cfg.words.length; wi++) {
-        if (teacherInput.includes(cfg.words[wi])) hitWords.push(cfg.words[wi]);
-      }
-      var hits = hitWords.length;
-      var pts = cfg.penalty
-        ? hits * cfg.perHit
-        : Math.min(cfg.max, hits * cfg.perHit);
-      total2 += pts;
-      breakdown.push({
-        key:      cfg.key,
-        label:    cfg.label,
-        icon:     cfg.icon,
-        max:      cfg.penalty ? 0 : cfg.max,
-        earned:   pts,
-        hits:     hits,
-        hitWords: hitWords.slice(0, 4),
-        penalty:  !!cfg.penalty
-      });
-    }
-    lengthBonus = teacherInput.length >= 60 ? 5 : 0;
-  }
-
-  /* ── turn 찾기 ── */
-  var turn = state.scenario && state.scenario.turns
-    ? state.scenario.turns[state.turnIndex]
-    : null;
-
-  /* ── HTML 조립 ── */
-  var html = '';
+  var html  = '';
 
   /* 학부모 버블 */
   html += '<div class="parent-bubble">';
@@ -688,85 +648,6 @@ function appendToHistory(parentMsg, teacherInput, score) {
   html += '</div></div>';
   html += '<div class="teacher-avatar" style="width:32px;height:32px;font-size:15px">\uD83E\uDDD1\u200D\uD83C\uDFEB</div>';
   html += '</div>';
-
-  /* ── 피드백 카드 (평가받기/종료 시에만 표시) ── */
-  if (turn && breakdown.length > 0) {
-    html += '<div class="turn-feedback" style="display:none">';
-    html += '<div style="margin-top:8px;border:1px solid #334155;border-radius:12px;overflow:hidden;font-size:13px">';
-
-    /* 모범 답변 */
-    html += '<div style="padding:12px 15px;background:#0f1f38;border-bottom:1px solid #334155">';
-    html += '<div style="font-size:11px;font-weight:700;color:#c4b5fd;margin-bottom:7px">&#128172; 모범 답변</div>';
-    html += '<div style="color:#e2e8f0;line-height:1.75;padding:9px 12px;background:rgba(99,102,241,.1);border-left:3px solid #6366f1;border-radius:0 8px 8px 0;white-space:pre-wrap;word-break:keep-all">' + escHtml(turn.modelAnswer || '') + '</div>';
-    html += '</div>';
-
-    /* 항목별 */
-    for (var bi = 0; bi < breakdown.length; bi++) {
-      var c = breakdown[bi];
-      if (c.penalty) continue;
-      var d = RD[c.key];
-      if (!d) continue;
-      var ratio = c.max > 0 ? c.earned / c.max : 0;
-      var col = ratio >= 1 ? '#22c55e' : ratio > 0 ? '#f59e0b' : '#ef4444';
-      var sIcon = ratio >= 1 ? '&#9989;' : ratio > 0 ? '&#128993;' : '&#10060;';
-      var msg = ratio >= 1 ? d.ok : ratio > 0 ? d.half : d.no;
-      var bg = ratio >= 1 ? 'rgba(34,197,94,.05)' : ratio > 0 ? 'rgba(245,158,11,.05)' : 'rgba(239,68,68,.05)';
-
-      html += '<div style="padding:11px 15px;background:' + bg + ';border-bottom:1px solid #1e293b">';
-
-      /* 헤더 */
-      html += '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;margin-bottom:7px">';
-      html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">';
-      html += '<span style="font-size:15px">' + (c.icon || '') + '</span>';
-      html += '<b style="color:' + col + '">' + escHtml(c.label) + '</b>';
-      html += '<span style="font-size:11px;color:#8294a7">' + escHtml(d.p) + '</span>';
-      html += '</div>';
-      html += '<span style="font-size:12px;font-weight:800;color:' + col + ';padding:2px 9px;background:' + col + '22;border-radius:9px">' + sIcon + ' ' + c.earned + '/' + c.max + '점</span>';
-      html += '</div>';
-
-      /* 포함된 표현 */
-      if (c.hitWords && c.hitWords.length > 0) {
-        html += '<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:7px">';
-        html += '<span style="font-size:11px;color:#4ade80;font-weight:600">&#10003; 포함된 표현:</span>';
-        for (var hi2 = 0; hi2 < c.hitWords.length; hi2++) {
-          html += '<span style="font-size:12px;color:#4ade80;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:1px 7px">' + escHtml(c.hitWords[hi2]) + '</span>';
-        }
-        html += '</div>';
-      }
-
-      /* 상태 메시지 */
-      html += '<div style="font-size:12px;padding:7px 11px;border-radius:7px;border-left:3px solid ' + col + ';background:' + col + '11;line-height:1.65">';
-      html += '<div style="color:' + col + ';font-weight:600' + (ratio < 1 ? ';margin-bottom:3px' : '') + '">' + escHtml(msg) + '</div>';
-      if (ratio < 1) {
-        html += '<div style="color:#94a3b8">' + escHtml(d.tip) + '</div>';
-      }
-      html += '</div>';
-      html += '</div>';
-    }
-
-    /* 방어적 감점 */
-    for (var pi = 0; pi < breakdown.length; pi++) {
-      var pc = breakdown[pi];
-      if (pc.penalty && pc.hits > 0) {
-        html += '<div style="padding:9px 15px;background:rgba(239,68,68,.06);border-top:1px solid #1e293b">';
-        html += '<div style="font-size:12px;color:#f87171">&#9888; <b>방어적 표현 감점 (' + pc.earned + '점):</b> "' + escHtml((pc.hitWords || []).join('", "')) + '" — 방어적 표현은 학부모 감정을 악화시킵니다.</div>';
-        html += '</div>';
-      }
-    }
-
-    /* 성실도 보너스 */
-    if (lengthBonus) {
-      html += '<div style="padding:8px 15px;background:rgba(99,102,241,.05);border-top:1px solid #1e293b;font-size:12px;color:#a5b4fc">&#11088; 성실도 보너스 +5점 — 충분한 길이의 답변이에요!</div>';
-    }
-
-    /* 팁 */
-    if (turn.tip) {
-      html += '<div style="padding:9px 15px;background:#0a1628;border-top:1px solid #334155;font-size:12px;color:#8294a7;line-height:1.55">' + escHtml(turn.tip) + '</div>';
-    }
-
-    html += '</div>';
-    html += '</div>'; /* /turn-feedback */
-  }
 
   var div = document.createElement('div');
   div.className = 'history-exchange anim-fade-in';
@@ -895,14 +776,7 @@ function drawRadarChart(scores) {
   if (el) el.innerHTML = svg;
 }
 
-function revealAllFeedback() {
-  document.querySelectorAll('.turn-feedback').forEach(function(el) {
-    el.style.display = 'block';
-  });
-}
-
 function showEndScreen() {
-  revealAllFeedback();
   state.phase = 'complete';
 
   // 입력 영역 및 학부모 현재 말풍선 숨기기
@@ -973,31 +847,101 @@ function showEndScreen() {
     </div>`;
   }).join('');
 
-  // ── 턴별 모범 답변 섹션 ──────────────────────────
+  // ── 턴별 상세 리뷰 ──────────────────────────────
   const modelSection = $('end-model-section');
   if (modelSection) {
-    modelSection.innerHTML = state.turnHistory.map((h, i) => {
-      const turn  = state.scenario.turns[i];
-      if (!turn) return '';
-      const sc    = h.score;
-      const scCol = sc >= 70 ? '#22c55e' : sc >= 40 ? '#f59e0b' : '#ef4444';
-      return `
-      <div style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border2)">
-        <div style="font-size:11px;color:var(--txt3);margin-bottom:8px;font-weight:700">
-          ${i+1}번째 대화
-          <span style="color:${scCol};margin-left:6px">${sc}점</span>
-        </div>
-        <div style="font-size:12px;color:var(--txt2);margin-bottom:6px;font-style:italic">
-          학부모: "${escHtml(h.parentMsg.slice(0,60))}${h.parentMsg.length>60?'…':''}"
-        </div>
-        <div style="font-size:13px;color:var(--txt);padding:10px 14px;
-                    background:rgba(99,102,241,.07);border-left:3px solid #6366f1;
-                    border-radius:0 8px 8px 0;margin-bottom:6px;line-height:1.6">
-          💬 모범: "${escHtml(turn.modelAnswer)}"
-        </div>
-        <div style="font-size:11px;color:var(--txt3)">${turn.tip}</div>
-      </div>`;
-    }).join('');
+    modelSection.innerHTML = '<div style="font-size:12px;font-weight:700;color:#a5b4fc;margin-bottom:16px">💬 대화별 상세 분석</div>' +
+      state.turnHistory.map(function(h, i) {
+        var turn  = state.scenario.turns[i];
+        if (!turn) return '';
+        var sc    = h.score;
+        var scCol = sc >= 70 ? '#22c55e' : sc >= 40 ? '#f59e0b' : '#ef4444';
+
+        /* ── 루브릭 breakdown 계산 ── */
+        var breakdown = [];
+        var lengthBonus = (h.teacherInput && h.teacherInput.length >= 60) ? 5 : 0;
+        for (var ri = 0; ri < RUBRIC.length; ri++) {
+          var cfg = RUBRIC[ri];
+          var hitWords = [];
+          for (var wi = 0; wi < cfg.words.length; wi++) {
+            if (h.teacherInput && h.teacherInput.includes(cfg.words[wi])) hitWords.push(cfg.words[wi]);
+          }
+          var pts = cfg.penalty
+            ? hitWords.length * cfg.perHit
+            : Math.min(cfg.max, hitWords.length * cfg.perHit);
+          breakdown.push({ key: cfg.key, label: cfg.label, icon: cfg.icon,
+            max: cfg.penalty ? 0 : cfg.max, earned: pts,
+            hitWords: hitWords.slice(0,4), penalty: !!cfg.penalty });
+        }
+
+        var html = '<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border2)">';
+
+        /* ① 헤더 */
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
+        html += '<span style="font-size:13px;font-weight:800;color:var(--txt)">' + (i+1) + '번째 대화</span>';
+        html += '<span style="font-size:13px;font-weight:800;color:' + scCol + ';background:' + scCol + '18;border:1px solid ' + scCol + '40;padding:2px 10px;border-radius:10px">' + sc + '점</span>';
+        html += '</div>';
+
+        /* ② 학부모 발화 */
+        html += '<div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:4px">👩 학부모</div>';
+        html += '<div style="font-size:13px;color:var(--txt2);padding:9px 13px;background:rgba(30,41,59,.7);border-radius:10px 10px 10px 3px;margin-bottom:10px;line-height:1.7">' + escHtml(h.parentMsg) + '</div>';
+
+        /* ③ 모범 답변 */
+        html += '<div style="font-size:11px;font-weight:700;color:#c4b5fd;margin-bottom:4px">💬 모범 답변</div>';
+        html += '<div style="font-size:13px;color:#e2e8f0;padding:9px 13px;background:rgba(99,102,241,.1);border-left:3px solid #6366f1;border-radius:0 10px 10px 0;margin-bottom:10px;line-height:1.7">' + escHtml(turn.modelAnswer) + '</div>';
+
+        /* ④ 내 답변 */
+        html += '<div style="font-size:11px;font-weight:700;color:#93c5fd;margin-bottom:4px">🧑‍🏫 내 답변</div>';
+        html += '<div style="font-size:13px;color:#e2e8f0;padding:9px 13px;background:rgba(59,130,246,.08);border-left:3px solid #3b82f6;border-radius:0 10px 10px 0;margin-bottom:12px;line-height:1.7">' + escHtml(h.teacherInput || '') + '</div>';
+
+        /* ⑤ 피드백 breakdown */
+        html += '<div style="border:1px solid #334155;border-radius:10px;overflow:hidden;font-size:13px">';
+        for (var bi = 0; bi < breakdown.length; bi++) {
+          var c = breakdown[bi];
+          if (c.penalty) continue;
+          var d = RD[c.key]; if (!d) continue;
+          var ratio = c.max > 0 ? c.earned / c.max : 0;
+          var col  = ratio >= 1 ? '#22c55e' : ratio > 0 ? '#f59e0b' : '#ef4444';
+          var sIcon = ratio >= 1 ? '✅' : ratio > 0 ? '🟡' : '❌';
+          var msg  = ratio >= 1 ? d.ok : ratio > 0 ? d.half : d.no;
+          var bg   = ratio >= 1 ? 'rgba(34,197,94,.05)' : ratio > 0 ? 'rgba(245,158,11,.05)' : 'rgba(239,68,68,.05)';
+          html += '<div style="padding:10px 14px;background:' + bg + ';border-bottom:1px solid #1e293b">';
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">';
+          html += '<div style="display:flex;align-items:center;gap:5px"><span>' + (c.icon||'') + '</span><b style="color:' + col + '">' + escHtml(c.label) + '</b><span style="font-size:11px;color:#8294a7">' + escHtml(d.p) + '</span></div>';
+          html += '<span style="font-size:11px;font-weight:800;color:' + col + ';background:' + col + '22;padding:2px 8px;border-radius:8px">' + sIcon + ' ' + c.earned + '/' + c.max + '점</span>';
+          html += '</div>';
+          if (c.hitWords && c.hitWords.length > 0) {
+            html += '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px">';
+            html += '<span style="font-size:11px;color:#4ade80;font-weight:600">✓ 포함:</span>';
+            c.hitWords.forEach(function(w) {
+              html += '<span style="font-size:11px;color:#4ade80;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:5px;padding:1px 6px">' + escHtml(w) + '</span>';
+            });
+            html += '</div>';
+          }
+          html += '<div style="font-size:12px;padding:6px 10px;border-radius:6px;border-left:3px solid ' + col + ';background:' + col + '11;line-height:1.6">';
+          html += '<span style="color:' + col + ';font-weight:600">' + escHtml(msg) + '</span>';
+          if (ratio < 1) html += '<div style="color:#94a3b8;margin-top:2px">' + escHtml(d.tip) + '</div>';
+          html += '</div></div>';
+        }
+        /* 방어적 감점 */
+        breakdown.forEach(function(pc) {
+          if (pc.penalty && pc.hitWords && pc.hitWords.length > 0) {
+            html += '<div style="padding:8px 14px;background:rgba(239,68,68,.06);border-top:1px solid #1e293b;font-size:12px;color:#f87171">';
+            html += '⚠️ <b>방어적 표현 감점:</b> \"' + escHtml(pc.hitWords.join('", "')) + '\" — 방어적 표현은 학부모 감정을 악화시킵니다.';
+            html += '</div>';
+          }
+        });
+        if (lengthBonus) {
+          html += '<div style="padding:7px 14px;background:rgba(99,102,241,.05);border-top:1px solid #1e293b;font-size:12px;color:#a5b4fc">⭐ 성실도 보너스 +5점 — 충분한 길이의 답변이에요!</div>';
+        }
+        /* 팁 */
+        if (turn.tip) {
+          html += '<div style="padding:8px 14px;background:#0a1628;border-top:1px solid #334155;font-size:12px;color:#8294a7;line-height:1.55">' + escHtml(turn.tip) + '</div>';
+        }
+        html += '</div>';  /* /breakdown box */
+        html += '</div>';  /* /turn block */
+        return html;
+      }).join('');
   }
 
   // 강점 / 개선점

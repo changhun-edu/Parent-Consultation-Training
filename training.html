@@ -25,35 +25,19 @@
     }
     .training-header__meta { font-size: 11px; color: var(--txt3); margin-top: 1px; }
 
-    /* ── 고정 컨텍스트 바 (상황 + 감정) ─────────── */
-    .context-bar {
-      position: sticky;
-      top: 62px;
-      z-index: 90;
-      background: rgba(13,21,38,.97);
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(8px);
-      padding: 10px 20px;
-    }
-    .context-bar__inner {
-      max-width: 720px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
     /* ── 배너 ──────────────────────────────────── */
     .situation-banner {
-      padding: 9px 14px;
+      margin: 14px 20px 0; padding: 12px 16px;
       background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.2);
       border-radius: var(--radius-sm); font-size: 12px; color: var(--txt2); line-height: 1.6;
     }
     .situation-banner__label { color: #a5b4fc; font-weight: 700; margin-right: 4px; }
 
+    /* ── 감정 바 ────────────────────────────────── */
+    .emotion-wrap { margin: 10px 20px 0; }
+
     /* ── 채팅 영역 ──────────────────────────────── */
     .chat-area { max-width: 720px; margin: 0 auto; padding: 16px 20px 48px; }
-    .parent-bubble, .history-exchange, .end-screen { scroll-margin-top: 180px; }
 
     /* ── 과거 대화 히스토리 ─────────────────────── */
     .history-exchange { margin-bottom: 20px; opacity: .65; }
@@ -263,23 +247,23 @@
   </div>
 </header>
 
-<!-- 고정 컨텍스트 바: 상황 + 감정 -->
-<div class="context-bar">
-  <div class="context-bar__inner">
-    <div class="situation-banner">
-      <span class="situation-banner__label">📌 상황</span>
-      <span id="scenario-situation"></span>
+<!-- 상황 배너 -->
+<div class="situation-banner container--narrow">
+  <span class="situation-banner__label">📌 상황</span>
+  <span id="scenario-situation"></span>
+</div>
+
+<!-- 감정 바 -->
+<div class="emotion-wrap container--narrow">
+  <div class="emotion-bar">
+    <span class="emotion-bar__label">👩 <span id="parent-name-header">학부모</span> 감정</span>
+    <div class="emotion-bar__track">
+      <div class="emotion-bar__fill" id="emotion-fill" style="width:70%;background:#f59e0b"></div>
     </div>
-    <div class="emotion-bar">
-      <span class="emotion-bar__label">👩 <span id="parent-name-header">학부모</span> 감정</span>
-      <div class="emotion-bar__track">
-        <div class="emotion-bar__fill" id="emotion-fill" style="width:70%;background:#f59e0b"></div>
-      </div>
-      <span class="emotion-bar__text">
-        <span id="emotion-label" style="color:var(--yellow)">다소 불안</span>
-        &nbsp;<span id="emotion-value" style="color:var(--txt3);font-size:11px">70</span>
-      </span>
-    </div>
+    <span class="emotion-bar__text">
+      <span id="emotion-label" style="color:var(--yellow)">다소 불안</span>
+      &nbsp;<span id="emotion-value" style="color:var(--txt3);font-size:11px">70</span>
+    </span>
   </div>
 </div>
 
@@ -407,5 +391,173 @@
 </div><!-- /chat-area -->
 
 <script src="js/training.js"></script>
+<script>
+/* =====================================================
+   인라인 오버라이드: 내 답변 비교 카드
+   training.js 버전과 무관하게 항상 동작
+   ===================================================== */
+window.addEventListener('DOMContentLoaded', function() {
+
+  // showEndScreen이 로드된 뒤 감싸기
+  var _orig = window.showEndScreen;
+  window.showEndScreen = function() {
+    _orig.apply(this, arguments);
+    setTimeout(renderMyAnswers, 50); // DOM 업데이트 후 실행
+  };
+
+  function renderMyAnswers() {
+    var section = document.getElementById('end-model-section');
+    if (!section) return;
+    if (!window.state || !window.state.turnHistory || !window.state.turnHistory.length) return;
+
+    var turns  = window.state.scenario.turns;
+    var history = window.state.turnHistory;
+
+    // 섹션 완전히 교체
+    section.innerHTML = '';
+
+    // 제목
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:13px;font-weight:700;color:#a5b4fc;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #334155';
+    title.textContent = '💬 대화별 내 답변 · 모범 답변 비교';
+    section.appendChild(title);
+
+    var FEEDBACK = {
+      empathy:  '"많이 놀라셨겠어요", "충분히 이해합니다" 같은 공감 표현을 추가해보세요.',
+      solution: '"확인하겠습니다", "이야기 나눠보겠습니다" 같은 행동 계획을 제시해보세요.',
+      fact:     '상황·경위 등 객관적 사실을 함께 설명하면 신뢰감이 높아져요.',
+      followup: '"연락드리겠습니다", "금요일까지 알려드릴게요" 등 후속 약속을 추가해보세요.',
+    };
+
+    for (var i = 0; i < history.length; i++) {
+      var h    = history[i];
+      var turn = turns[i];
+      if (!turn) continue;
+
+      var sc    = h.score || 0;
+      var scCol = sc >= 80 ? '#22c55e' : sc >= 60 ? '#3b82f6' : sc >= 40 ? '#f59e0b' : '#ef4444';
+      var bd    = Array.isArray(h.breakdown) ? h.breakdown : [];
+
+      // ── 카드 ──
+      var card = document.createElement('div');
+      card.style.cssText = 'margin-bottom:14px;padding:16px;background:#0d1526;border:1px solid #334155;border-radius:12px';
+
+      // 헤더
+      var hdr = document.createElement('div');
+      hdr.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:10px';
+      var hdrL = document.createElement('span');
+      hdrL.style.cssText = 'font-size:11px;color:#8294a7;font-weight:700';
+      hdrL.textContent = (i + 1) + '번째 대화';
+      var hdrR = document.createElement('span');
+      hdrR.style.cssText = 'font-size:18px;font-weight:900;color:' + scCol;
+      hdrR.textContent = sc + '점';
+      hdr.appendChild(hdrL);
+      hdr.appendChild(hdrR);
+      card.appendChild(hdr);
+
+      // 학부모 발언
+      var pMsg = document.createElement('div');
+      pMsg.style.cssText = 'font-size:12px;color:#94a3b8;padding:8px 12px;background:rgba(0,0,0,.25);border-radius:8px;font-style:italic;line-height:1.6;margin-bottom:12px';
+      var pText = (h.parentMsg || '').slice(0, 80);
+      if ((h.parentMsg || '').length > 80) pText += '…';
+      pMsg.textContent = '👩 ' + pText;
+      card.appendChild(pMsg);
+
+      // ── 내 답변 ──
+      var myLabel = document.createElement('div');
+      myLabel.style.cssText = 'font-size:11px;color:#93c5fd;font-weight:700;margin-bottom:6px';
+      myLabel.textContent = '🧑‍🏫 내 답변';
+      card.appendChild(myLabel);
+
+      var myBox = document.createElement('div');
+      myBox.style.cssText = 'font-size:13px;color:#e2e8f0;padding:12px 14px;'
+        + 'background:#1a2f4a;border:2px solid #2d5a8e;border-radius:8px;'
+        + 'line-height:1.75;margin-bottom:10px;white-space:pre-wrap;word-break:keep-all;min-height:44px';
+      myBox.textContent = h.teacherInput || '(입력된 답변 없음)';
+      card.appendChild(myBox);
+
+      // 루브릭 칩
+      if (bd.length > 0) {
+        var chipRow = document.createElement('div');
+        chipRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px';
+        for (var j = 0; j < bd.length; j++) {
+          var c = bd[j];
+          if (c.penalty && c.hits === 0) continue;
+          var chip = document.createElement('span');
+          var bg2, brd, col2, mk;
+          if (c.penalty) {
+            bg2='rgba(239,68,68,.15)'; brd='rgba(239,68,68,.4)'; col2='#f87171'; mk='⚠️';
+          } else if (c.earned >= c.maxPts && c.maxPts > 0) {
+            bg2='rgba(34,197,94,.15)'; brd='rgba(34,197,94,.4)'; col2='#4ade80'; mk='✅';
+          } else if (c.earned > 0) {
+            bg2='rgba(245,158,11,.15)'; brd='rgba(245,158,11,.4)'; col2='#fbbf24'; mk='🟡';
+          } else {
+            bg2='rgba(239,68,68,.08)'; brd='rgba(239,68,68,.25)'; col2='#f87171'; mk='❌';
+          }
+          chip.style.cssText = 'display:inline-flex;align-items:center;gap:3px;padding:3px 9px;'
+            + 'background:' + bg2 + ';border:1px solid ' + brd + ';border-radius:12px;'
+            + 'font-size:11px;font-weight:700;color:' + col2;
+          var pts2 = c.penalty ? c.earned + '점' : c.earned + '/' + c.maxPts + '점';
+          chip.textContent = mk + ' ' + c.label + ' ' + pts2;
+          chipRow.appendChild(chip);
+        }
+        if (h.lengthBonus) {
+          var lb2 = document.createElement('span');
+          lb2.style.cssText = 'display:inline-flex;align-items:center;gap:3px;padding:3px 9px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.35);border-radius:12px;font-size:11px;font-weight:700;color:#a5b4fc';
+          lb2.textContent = '⭐ 성실도 +5';
+          chipRow.appendChild(lb2);
+        }
+        card.appendChild(chipRow);
+      }
+
+      // 미달 피드백
+      var missing2 = bd.filter(function(c2) { return !c2.penalty && c2.maxPts > 0 && c2.earned < c2.maxPts; });
+      if (bd.length === 0 || missing2.length === 0) {
+        var ok2 = document.createElement('div');
+        ok2.style.cssText = 'font-size:12px;color:#4ade80;font-weight:600;margin-bottom:10px';
+        ok2.textContent = '✅ 모든 평가 항목을 잘 포함한 답변이에요!';
+        card.appendChild(ok2);
+      } else {
+        var fbBox2 = document.createElement('div');
+        fbBox2.style.cssText = 'margin-bottom:10px;padding:10px 12px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px';
+        for (var k = 0; k < missing2.length; k++) {
+          var mc = missing2[k];
+          var row2 = document.createElement('div');
+          row2.style.cssText = 'margin-bottom:5px;font-size:12px;color:#94a3b8;line-height:1.55';
+          var rowSpan = document.createElement('span');
+          rowSpan.style.cssText = 'color:#fbbf24;font-weight:700';
+          rowSpan.textContent = mc.icon + ' ' + mc.label;
+          row2.appendChild(rowSpan);
+          row2.appendChild(document.createTextNode(' — ' + (FEEDBACK[mc.key] || '')));
+          fbBox2.appendChild(row2);
+        }
+        card.appendChild(fbBox2);
+      }
+
+      // ── 모범 답변 ──
+      var modLabel2 = document.createElement('div');
+      modLabel2.style.cssText = 'font-size:11px;color:#c4b5fd;font-weight:700;margin-bottom:6px';
+      modLabel2.textContent = '💬 모범 답변';
+      card.appendChild(modLabel2);
+
+      var modBox2 = document.createElement('div');
+      modBox2.style.cssText = 'font-size:13px;color:#e2e8f0;padding:12px 14px;'
+        + 'background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);'
+        + 'border-left:3px solid #6366f1;border-radius:0 8px 8px 0;'
+        + 'line-height:1.75;margin-bottom:8px;white-space:pre-wrap;word-break:keep-all';
+      modBox2.textContent = turn.modelAnswer || '';
+      card.appendChild(modBox2);
+
+      var tipDiv2 = document.createElement('div');
+      tipDiv2.style.cssText = 'font-size:12px;color:#8294a7;line-height:1.55';
+      tipDiv2.textContent = turn.tip || '';
+      card.appendChild(tipDiv2);
+
+      section.appendChild(card);
+    }
+  }
+
+}); // DOMContentLoaded
+</script>
 </body>
 </html>

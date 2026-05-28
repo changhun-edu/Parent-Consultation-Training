@@ -30,12 +30,45 @@
       margin-bottom: 12px;
     }
     .hero__desc { font-size: 15px; color: var(--txt2); max-width: 480px; margin: 0 auto 24px; }
-    .hero__tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-    .hero__tag {
-      background: rgba(99,102,241,.1);
+    /* ── 히어로 3단계 플로우 ───────────────────────── */
+    .hero__flow {
+      display: flex; align-items: stretch; justify-content: center;
+      gap: 10px; flex-wrap: wrap; margin-top: 8px;
+    }
+    .hero__step {
+      display: flex; flex-direction: column; align-items: center; gap: 7px;
+      padding: 18px 16px;
+      background: rgba(99,102,241,.08);
       border: 1px solid rgba(99,102,241,.22);
-      border-radius: 20px; padding: 5px 14px;
-      font-size: 12px; color: #a5b4fc;
+      border-radius: 16px;
+      flex: 1; min-width: 120px; max-width: 155px;
+      transition: background .2s, border-color .2s;
+    }
+    .hero__step:hover {
+      background: rgba(99,102,241,.15);
+      border-color: rgba(99,102,241,.4);
+    }
+    .hero__step-num {
+      font-size: 10px; font-weight: 800; color: #6366f1;
+      letter-spacing: .12em;
+    }
+    .hero__step-icon { font-size: 26px; line-height: 1; }
+    .hero__step-label {
+      font-size: 13px; font-weight: 800; color: var(--txt);
+    }
+    .hero__step-desc {
+      font-size: 11px; color: var(--txt3);
+      text-align: center; line-height: 1.5;
+    }
+    .hero__arrow {
+      display: flex; align-items: center;
+      font-size: 18px; color: rgba(99,102,241,.45);
+      flex-shrink: 0; padding-top: 2px;
+    }
+    @media (max-width: 520px) {
+      .hero__flow { gap: 8px; }
+      .hero__arrow { transform: rotate(90deg); }
+      .hero__step { min-width: 100px; padding: 14px 10px; }
     }
 
     /* ── 유목 안내 카드 ─────────────────────────────── */
@@ -171,14 +204,37 @@
 
 <!-- 히어로 -->
 <section class="hero">
-  <div class="hero__pill">🏫 현장 교사를 위한 훈련 시스템</div>
+  <div class="hero__pill">🏫 현장 교원를 위한 훈련 시스템</div>
   <h1 class="hero__title">학부모 상담<br>시뮬레이터</h1>
-  <p class="hero__desc">실제 학교 현장의 상담 상황을 단계별 시나리오로 연습하고 즉각적인 피드백을 받으세요.</p>
-  <div class="hero__tags">
-    <span class="hero__tag">🟢 일반 상황 6턴</span>
-    <span class="hero__tag">🟡 민감 상황 9턴</span>
-    <span class="hero__tag">🔴 고난도 민원 12턴</span>
-    <span class="hero__tag">📊 기록 저장</span>
+  <p class="hero__desc">실제 학교 현장의 상담 상황을 단계별 시나리오로 연습하고<br>즉각적인 피드백을 받으세요.</p>
+  <div class="hero__flow">
+    <div class="hero__step">
+      <span class="hero__step-num">STEP 01</span>
+      <span class="hero__step-icon">📋</span>
+      <span class="hero__step-label">시나리오 선택</span>
+      <span class="hero__step-desc">난이도·카테고리별<br>10가지 실전 상황</span>
+    </div>
+    <div class="hero__arrow">→</div>
+    <div class="hero__step">
+      <span class="hero__step-num">STEP 02</span>
+      <span class="hero__step-icon">💬</span>
+      <span class="hero__step-label">대화 훈련</span>
+      <span class="hero__step-desc">학부모 역할의 시나리오와<br>직접 응답 연습</span>
+    </div>
+    <div class="hero__arrow">→</div>
+    <div class="hero__step">
+      <span class="hero__step-num">STEP 03</span>
+      <span class="hero__step-icon">📊</span>
+      <span class="hero__step-label">피드백 확인</span>
+      <span class="hero__step-desc">루브릭 채점 +<br>모범 답변 비교</span>
+    </div>
+    <div class="hero__arrow">→</div>
+    <div class="hero__step">
+      <span class="hero__step-num">STEP 04</span>
+      <span class="hero__step-icon">🔄</span>
+      <span class="hero__step-label">반복 성장</span>
+      <span class="hero__step-desc">기록 저장 +<br>방사형 역량 분석</span>
+    </div>
   </div>
 </section>
 

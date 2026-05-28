@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>플래시카드 – 학부모 상담 훈련</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { min-height: 100vh; }
+
+    /* ── 필터 바 ────────────────────────────────────── */
+    .filter-bar {
+      background: rgba(15,23,42,.97);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      position: sticky; top: 57px; z-index: 80;
+      backdrop-filter: blur(8px);
+    }
+    .filter-bar__inner {
+      max-width: 700px; margin: 0 auto;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .f-btn {
+      padding: 5px 14px; background: transparent;
+      border: 1px solid var(--border); border-radius: 20px;
+      color: var(--txt3); font-size: 12px; cursor: pointer;
+      transition: all .15s; white-space: nowrap;
+    }
+    .f-btn:hover, .f-btn.active {
+      background: rgba(99,102,241,.12);
+      border-color: rgba(99,102,241,.4); color: #a5b4fc;
+    }
+    .f-btn--green.active  { background:rgba(34,197,94,.12); border-color:rgba(34,197,94,.4); color:#4ade80; }
+    .f-btn--yellow.active { background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.4); color:#fbbf24; }
+    .f-btn--red.active    { background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.4); color:#f87171; }
+    .filter-sep { width:1px; height:18px; background:var(--border); flex-shrink:0; }
+    .shuffle-btn {
+      margin-left: auto; padding: 5px 14px;
+      background: rgba(99,102,241,.12); border: 1px solid rgba(99,102,241,.3);
+      border-radius: 20px; color: #a5b4fc; font-size: 12px; cursor: pointer;
+      transition: all .15s;
+    }
+    .shuffle-btn:hover { background: rgba(99,102,241,.22); }
+
+    /* ── 진행 표시 ───────────────────────────────────── */
+    .progress-bar {
+      max-width: 700px; margin: 0 auto;
+      padding: 14px 20px 0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .progress-track {
+      flex: 1; height: 4px; background: var(--border2);
+      border-radius: 2px; overflow: hidden; margin: 0 12px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      border-radius: 2px; transition: width .4s ease;
+    }
+    .progress-label { font-size: 12px; color: var(--txt3); white-space: nowrap; }
+
+    /* ── 카드 영역 ───────────────────────────────────── */
+    .card-area {
+      max-width: 700px; margin: 0 auto;
+      padding: 20px 20px 40px;
+      perspective: 1200px;
+    }
+    .card-scene {
+      width: 100%; min-height: 400px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform .55s cubic-bezier(.4,0,.2,1);
+      cursor: pointer;
+    }
+    .card-scene.flipped { transform: rotateY(180deg); }
+
+    .card-face {
+      position: absolute; width: 100%; min-height: 400px;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      border-radius: 18px; padding: 28px;
+      display: flex; flex-direction: column;
+    }
+    .card-front {
+      background: var(--bg2); border: 1px solid var(--border);
+    }
+    .card-back {
+      background: linear-gradient(160deg, #0f172a 0%, #1a2744 100%);
+      border: 1px solid rgba(99,102,241,.3);
+      transform: rotateY(180deg);
+    }
+
+    /* 앞면 */
+    .card-front__meta {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 18px; flex-wrap: wrap;
+    }
+    .card-front__parent {
+      font-size: 13px; font-weight: 700; color: var(--txt2);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .turn-badge {
+      font-size: 11px; color: var(--txt3);
+      background: var(--bg); border: 1px solid var(--border2);
+      padding: 2px 9px; border-radius: 8px;
+    }
+    .card-front__context {
+      font-size: 12px; color: var(--txt3);
+      padding: 10px 14px; background: rgba(0,0,0,.25);
+      border-radius: 10px; margin-bottom: 18px; line-height: 1.65;
+    }
+    .card-front__message {
+      font-size: 16px; color: var(--txt); line-height: 1.85;
+      flex: 1;
+    }
+    .card-front__hint {
+      margin-top: 24px; text-align: center;
+      font-size: 12px; color: var(--txt3);
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .hint-pulse {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #6366f1; animation: pulse 1.8s infinite;
+    }
+
+    /* 뒷면 */
+    .card-back__label {
+      font-size: 11px; font-weight: 800; letter-spacing: .08em;
+      color: #a5b4fc; margin-bottom: 10px;
+    }
+    .card-back__answer {
+      font-size: 15px; color: var(--txt); line-height: 1.85;
+      padding: 16px 18px;
+      background: rgba(99,102,241,.08); border-left: 3px solid #6366f1;
+      border-radius: 0 12px 12px 0; margin-bottom: 16px; flex: 1;
+    }
+    .card-back__tip {
+      font-size: 12px; color: var(--txt3); line-height: 1.65;
+      padding: 10px 14px; background: rgba(0,0,0,.25); border-radius: 10px;
+      margin-bottom: 14px;
+    }
+    .rubric-tags {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .rtag {
+      font-size: 11px; font-weight: 700; padding: 4px 12px;
+      border-radius: 10px; display: flex; align-items: center; gap: 4px;
+    }
+    .rtag--hit { opacity: 1; }
+    .rtag--miss { opacity: .35; }
+
+    /* ── 네비 버튼 ───────────────────────────────────── */
+    .nav-row {
+      max-width: 700px; margin: 0 auto;
+      padding: 0 20px 32px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .nav-btn {
+      flex: 1; padding: 13px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 12px; color: var(--txt2); font-size: 14px;
+      font-weight: 700; cursor: pointer; transition: all .18s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      border-color: rgba(99,102,241,.4); color: #a5b4fc;
+      background: rgba(99,102,241,.08);
+    }
+    .nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .flip-btn {
+      flex: 2; padding: 13px;
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      border: none; border-radius: 12px; color: #fff;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: opacity .18s;
+    }
+    .flip-btn:hover { opacity: .88; }
+
+    /* ── 빈 상태 ────────────────────────────────────── */
+    .empty-state {
+      max-width: 700px; margin: 60px auto;
+      text-align: center; padding: 0 20px;
+    }
+    .empty-state__icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state__msg { font-size: 15px; color: var(--txt2); }
+
+    /* ── 완료 화면 ──────────────────────────────────── */
+    .done-screen {
+      max-width: 700px; margin: 40px auto;
+      padding: 0 20px; text-align: center;
+    }
+    .done-screen__icon { font-size: 56px; margin-bottom: 16px; }
+    .done-screen__title { font-size: 24px; font-weight: 900; color: var(--txt); margin-bottom: 8px; }
+    .done-screen__sub { font-size: 14px; color: var(--txt2); margin-bottom: 24px; }
+    .done-screen__btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:none; }
+    }
+    .card-scene { animation: fadeUp .35s ease both; }
+  </style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header class="site-header">
+  <div class="site-header__inner">
+    <div class="site-header__logo">
+      <a href="index.html" class="btn btn--ghost btn--sm" style="margin-right:4px">← 홈</a>
+      <div class="site-header__logo-icon">🃏</div>
+      <div>
+        <div class="site-header__title">플래시카드</div>
+        <div class="site-header__sub">모범 답변 패턴 훈련</div>
+      </div>
+    </div>
+    <a href="guide.html" class="btn btn--ghost btn--sm">📖 가이드</a>
+  </div>
+</header>
+
+<!-- 필터 바 -->
+<div class="filter-bar">
+  <div class="filter-bar__inner">
+    <button class="f-btn active" data-filter="all">전체</button>
+    <button class="f-btn f-btn--green"  data-filter="일반">🟢 일반</button>
+    <button class="f-btn f-btn--yellow" data-filter="민감">🟡 민감</button>
+    <button class="f-btn f-btn--red"    data-filter="고난도">🔴 고난도</button>
+    <div class="filter-sep"></div>
+    <button class="f-btn" data-filter="생활지도">📚 생활지도</button>
+    <button class="f-btn" data-filter="교우 관계">👥 교우 관계</button>
+    <button class="f-btn" data-filter="안전사고">🚑 안전사고</button>
+    <button class="f-btn" data-filter="교사 태도">🧑‍🏫 교사 태도</button>
+    <button class="shuffle-btn" onclick="shuffleCards()">🔀 섞기</button>
+  </div>
+</div>
+
+<!-- 진행 표시 -->
+<div class="progress-bar">
+  <span class="progress-label" id="prog-label">로딩 중…</span>
+  <div class="progress-track">
+    <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+  </div>
+  <span class="progress-label" id="prog-pct">0%</span>
+</div>
+
+<!-- 카드 영역 -->
+<div class="card-area" id="card-area">
+  <div style="text-align:center;padding:60px;color:var(--txt3)">카드를 불러오는 중…</div>
+</div>
+
+<!-- 네비 버튼 -->
+<div class="nav-row" id="nav-row" style="display:none">
+  <button class="nav-btn" id="prev-btn" onclick="prevCard()">← 이전</button>
+  <button class="flip-btn" id="flip-btn" onclick="flipCard()">뒤집기 →</button>
+  <button class="nav-btn" id="next-btn" onclick="nextCard()">다음 →</button>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   데이터 & 상태
+   ═══════════════════════════════════════════════════ */
+const RUBRIC = [
+  { key:'empathy',  label:'공감',   icon:'💛', color:'#f59e0b',
+    words:['많이','충분히','이해합니다','이해해요','걱정','마음이','속상',
+           '놀라셨겠','안타깝','힘드셨겠','당황하셨겠','그러셨겠','죄송'] },
+  { key:'solution', label:'해결방향', icon:'🔧', color:'#3b82f6',
+    words:['확인','살펴보','이야기 나누','알려드리','연락드리','방법을','조치',
+           '지도하겠','함께','노력','챙기겠','처리하겠','파악하겠','점검'] },
+  { key:'fact',     label:'사실기반', icon:'📋', color:'#22c55e',
+    words:['직접','확인했','상황을','당시','기록','목격','제가 보','처치','양호실'] },
+  { key:'followup', label:'후속약속', icon:'📅', color:'#a78bfa',
+    words:['연락드리겠','문자','알려드리겠','다시 연락','확인하겠습니다',
+           '살펴보겠','이번 주','금요일','내일','바로'] },
+];
+
+let allCards   = [];   // 전체 카드 (turn × scenario)
+let deck       = [];   // 현재 필터된 덱
+let idx        = 0;
+let isFlipped  = false;
+let activeFilter = 'all';
+
+/* ═══════════════════════════════════════════════════
+   초기화
+   ═══════════════════════════════════════════════════ */
+async function init() {
+  try {
+    const data = await fetch('data/scenarios.json').then(r => r.json());
+    allCards = [];
+    data.scenarios.forEach(s => {
+      s.turns.forEach((t, i) => {
+        allCards.push({
+          scenarioType: s.scenarioType,
+          category:     s.category,
+          categoryIcon: s.categoryIcon,
+          title:        s.title,
+          situation:    s.situation,
+          parentName:   s.parentName,
+          turnNum:      i + 1,
+          totalTurns:   s.turns.length,
+          parentMessage: t.parentMessage,
+          modelAnswer:   t.modelAnswer,
+          tip:           t.tip,
+        });
+      });
+    });
+    applyFilter();
+  } catch(e) {
+    document.getElementById('card-area').innerHTML =
+      '<div class="empty-state"><div class="empty-state__icon">⚠️</div><div class="empty-state__msg">시나리오 데이터를 불러올 수 없습니다.</div></div>';
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   필터
+   ═══════════════════════════════════════════════════ */
+document.querySelectorAll('.f-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    applyFilter();
+  });
+});
+
+function applyFilter() {
+  if (activeFilter === 'all') {
+    deck = [...allCards];
+  } else if (['일반','민감','고난도'].includes(activeFilter)) {
+    deck = allCards.filter(c => c.scenarioType === activeFilter);
+  } else {
+    deck = allCards.filter(c => c.category === activeFilter);
+  }
+  idx = 0;
+  isFlipped = false;
+  renderCard();
+}
+
+function shuffleCards() {
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  idx = 0; isFlipped = false;
+  renderCard();
+}
+
+/* ═══════════════════════════════════════════════════
+   렌더링
+   ═══════════════════════════════════════════════════ */
+function renderCard() {
+  const area   = document.getElementById('card-area');
+  const navRow = document.getElementById('nav-row');
+
+  if (!deck.length) {
+    area.innerHTML = '<div class="empty-state"><div class="empty-state__icon">🃏</div><div class="empty-state__msg">해당 필터에 카드가 없습니다.</div></div>';
+    navRow.style.display = 'none';
+    updateProgress(0, 0);
+    return;
+  }
+
+  if (idx >= deck.length) {
+    showDone();
+    navRow.style.display = 'none';
+    return;
+  }
+
+  const c = deck[idx];
+  navRow.style.display = 'flex';
+
+  // 루브릭 분석
+  const rubricResult = RUBRIC.map(r => ({
+    ...r,
+    hit: r.words.some(w => c.modelAnswer.includes(w))
+  }));
+
+  // 유형 색상
+  const typeColor = c.scenarioType === '일반' ? '#22c55e' :
+                    c.scenarioType === '민감' ? '#f59e0b' : '#ef4444';
+  const typeBg    = c.scenarioType === '일반' ? 'rgba(34,197,94,.1)' :
+                    c.scenarioType === '민감' ? 'rgba(245,158,11,.1)' : 'rgba(239,68,68,.1)';
+
+  area.innerHTML = `
+  <div class="card-scene ${isFlipped ? 'flipped' : ''}" id="card-scene" onclick="flipCard()">
+
+    <!-- 앞면: 학부모 발화 -->
+    <div class="card-face card-front">
+      <div class="card-front__meta">
+        <span style="font-size:13px;background:${typeBg};color:${typeColor};border:1px solid ${typeColor}33;padding:3px 10px;border-radius:10px;font-weight:700">${c.scenarioType}</span>
+        <span style="font-size:13px">${c.categoryIcon}</span>
+        <span style="font-size:12px;color:var(--txt3)">${c.category}</span>
+        <span class="turn-badge">${c.turnNum} / ${c.totalTurns}턴</span>
+      </div>
+      <div class="card-front__context">
+        📌 ${escHtml(c.situation)}
+      </div>
+      <div class="card-front__parent">
+        <span style="font-size:18px">👩</span>
+        <span>${escHtml(c.parentName)}</span>
+      </div>
+      <div class="card-front__message" style="margin-top:10px">
+        "${escHtml(c.parentMessage)}"
+      </div>
+      <div class="card-front__hint">
+        <div class="hint-pulse"></div>
+        클릭 또는 '뒤집기' 버튼으로 모범 답변 확인
+      </div>
+    </div>
+
+    <!-- 뒷면: 모범 답변 -->
+    <div class="card-face card-back">
+      <div class="card-back__label">🧑‍🏫 모범 답변</div>
+      <div class="card-back__answer">"${escHtml(c.modelAnswer)}"</div>
+      <div class="card-back__tip">${escHtml(c.tip)}</div>
+      <div class="rubric-tags">
+        ${rubricResult.map(r => `
+          <div class="rtag ${r.hit ? 'rtag--hit' : 'rtag--miss'}"
+               style="background:${r.hit ? r.color+'22' : 'rgba(30,41,59,.6)'};
+                      border:1px solid ${r.hit ? r.color+'44' : 'rgba(51,65,85,.4)'};
+                      color:${r.hit ? r.color : 'var(--txt3)'}">
+            ${r.icon} ${r.label} ${r.hit ? '✓' : '✕'}
+          </div>`).join('')}
+      </div>
+    </div>
+
+  </div>`;
+
+  document.getElementById('prev-btn').disabled = idx === 0;
+  document.getElementById('next-btn').disabled = false;
+  document.getElementById('flip-btn').textContent = isFlipped ? '← 질문 보기' : '뒤집기 →';
+
+  updateProgress(idx + 1, deck.length);
+}
+
+function showDone() {
+  const area = document.getElementById('card-area');
+  area.innerHTML = `
+  <div class="done-screen anim-pop-in">
+    <div class="done-screen__icon">🎉</div>
+    <div class="done-screen__title">완주했습니다!</div>
+    <div class="done-screen__sub">총 ${deck.length}장을 모두 완료했어요.</div>
+    <div class="done-screen__btns">
+      <button class="btn btn--ghost" onclick="idx=0;isFlipped=false;renderCard()">🔄 처음부터</button>
+      <button class="btn btn--primary" onclick="shuffleCards()">🔀 섞어서 다시</button>
+      <a href="index.html" class="btn btn--ghost">🏠 시나리오 연습</a>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════
+   카드 조작
+   ═══════════════════════════════════════════════════ */
+function flipCard() {
+  isFlipped = !isFlipped;
+  const scene = document.getElementById('card-scene');
+  if (scene) {
+    scene.classList.toggle('flipped', isFlipped);
+    document.getElementById('flip-btn').textContent = isFlipped ? '← 질문 보기' : '뒤집기 →';
+  }
+}
+
+function prevCard() {
+  if (idx > 0) { idx--; isFlipped = false; renderCard(); }
+}
+
+function nextCard() {
+  idx++; isFlipped = false; renderCard();
+}
+
+/* ── 키보드 단축키 ── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextCard();
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevCard();
+  else if (e.key === ' ') { e.preventDefault(); flipCard(); }
+});
+
+/* ═══════════════════════════════════════════════════
+   진행률
+   ═══════════════════════════════════════════════════ */
+function updateProgress(cur, total) {
+  const pct = total ? Math.round((cur / total) * 100) : 0;
+  document.getElementById('prog-label').textContent = total ? `${cur} / ${total}장` : '0장';
+  document.getElementById('prog-fill').style.width  = pct + '%';
+  document.getElementById('prog-pct').textContent   = pct + '%';
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

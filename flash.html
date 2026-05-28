@@ -66,19 +66,25 @@
       perspective: 1200px;
     }
     .card-scene {
-      width: 100%; min-height: 400px;
+      width: 100%; height: 420px;
       position: relative;
       transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
       transition: transform .55s cubic-bezier(.4,0,.2,1);
+      -webkit-transition: transform .55s cubic-bezier(.4,0,.2,1);
       cursor: pointer;
     }
-    .card-scene.flipped { transform: rotateY(180deg); }
+    .card-scene.flipped {
+      transform: rotateY(180deg);
+      -webkit-transform: rotateY(180deg);
+    }
 
     .card-face {
-      position: absolute; width: 100%; min-height: 400px;
+      position: absolute; width: 100%; height: 100%;
       backface-visibility: hidden; -webkit-backface-visibility: hidden;
       border-radius: 18px; padding: 28px;
       display: flex; flex-direction: column;
+      overflow-y: auto;
     }
     .card-front {
       background: var(--bg2); border: 1px solid var(--border);
@@ -87,6 +93,7 @@
       background: linear-gradient(160deg, #0f172a 0%, #1a2744 100%);
       border: 1px solid rgba(99,102,241,.3);
       transform: rotateY(180deg);
+      -webkit-transform: rotateY(180deg);
     }
 
     /* 앞면 */
@@ -193,10 +200,10 @@
     .done-screen__btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 
     @keyframes fadeUp {
-      from { opacity:0; transform:translateY(12px); }
-      to   { opacity:1; transform:none; }
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
     }
-    .card-scene { animation: fadeUp .35s ease both; }
+    .card-wrapper { animation: fadeUp .3s ease both; }
   </style>
 </head>
 <body>
@@ -378,6 +385,7 @@ function renderCard() {
                     c.scenarioType === '민감' ? 'rgba(245,158,11,.1)' : 'rgba(239,68,68,.1)';
 
   area.innerHTML = `
+  <div class="card-wrapper">
   <div class="card-scene ${isFlipped ? 'flipped' : ''}" id="card-scene" onclick="flipCard()">
 
     <!-- 앞면: 학부모 발화 -->
@@ -420,6 +428,7 @@ function renderCard() {
       </div>
     </div>
 
+  </div>
   </div>`;
 
   document.getElementById('prev-btn').disabled = idx === 0;

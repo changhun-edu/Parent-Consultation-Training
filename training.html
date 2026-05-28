@@ -25,19 +25,30 @@
     }
     .training-header__meta { font-size: 11px; color: var(--txt3); margin-top: 1px; }
 
+    /* ── 고정 정보 바 (배너 + 감정 바 묶음) ──────── */
+    .sticky-info-bar {
+      position: sticky;
+      top: 58px;           /* training-header 높이 */
+      z-index: 90;
+      background: #0f172a;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
     /* ── 배너 ──────────────────────────────────── */
     .situation-banner {
-      margin: 14px 20px 0; padding: 12px 16px;
+      max-width: 720px; margin: 14px auto 0; padding: 12px 16px;
       background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.2);
       border-radius: var(--radius-sm); font-size: 12px; color: var(--txt2); line-height: 1.6;
     }
+    @media (max-width: 760px) { .situation-banner { margin-left: 20px; margin-right: 20px; } }
     .situation-banner__label { color: #a5b4fc; font-weight: 700; margin-right: 4px; }
 
     /* ── 감정 바 ────────────────────────────────── */
-    .emotion-wrap { margin: 10px 20px 0; }
+    .emotion-wrap { max-width: 720px; margin: 10px auto 0; padding: 0 20px; }
 
     /* ── 채팅 영역 ──────────────────────────────── */
-    .chat-area { max-width: 720px; margin: 0 auto; padding: 16px 20px 48px; }
+    .chat-area { max-width: 720px; margin: 0 auto; padding: 24px 20px 48px; }
 
     /* ── 과거 대화 히스토리 ─────────────────────── */
     .history-exchange { margin-bottom: 20px; opacity: .65; }
@@ -247,14 +258,15 @@
   </div>
 </header>
 
-<!-- 상황 배너 -->
-<div class="situation-banner container--narrow">
+<!-- 고정 정보 바 (상황 배너 + 감정 바) -->
+<div class="sticky-info-bar">
+
+<div class="situation-banner">
   <span class="situation-banner__label">📌 상황</span>
   <span id="scenario-situation"></span>
 </div>
 
-<!-- 감정 바 -->
-<div class="emotion-wrap container--narrow">
+<div class="emotion-wrap">
   <div class="emotion-bar">
     <span class="emotion-bar__label">👩 <span id="parent-name-header">학부모</span> 감정</span>
     <div class="emotion-bar__track">
@@ -265,7 +277,8 @@
       &nbsp;<span id="emotion-value" style="color:var(--txt3);font-size:11px">70</span>
     </span>
   </div>
-</div>
+</div><!-- /emotion-wrap -->
+</div><!-- /sticky-info-bar -->
 
 <!-- 채팅 영역 -->
 <div class="chat-area container--narrow">
@@ -355,9 +368,14 @@
       <div class="end-score" id="end-score">—</div>
       <div><span class="end-label-badge" id="end-label-badge">—</span></div>
       <p class="end-summary" id="end-summary"></p>
+      <!-- 레이더 차트 -->
+      <div id="radar-wrap" style="margin:22px auto 0;max-width:300px;border-top:1px solid var(--border2);padding-top:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.06em;margin-bottom:10px;text-align:center">📊 항목별 상담 역량</div>
+        <svg id="radar-svg" viewBox="-145 -145 290 290" style="width:100%;height:auto;display:block;"></svg>
+      </div>
       <!-- 턴별 점수 차트 -->
       <div class="end-turn-chart" id="end-turn-chart"
-           style="justify-content:center;border-top:1px solid var(--border2);margin-top:16px;padding-top:16px"></div>
+           style="justify-content:center;border-top:1px solid var(--border2);margin-top:20px;padding-top:16px"></div>
     </div>
 
     <!-- 턴별 모범 답변 비교 -->
@@ -671,8 +689,9 @@ function appendToHistory(parentMsg, teacherInput, score) {
   html += '<div class="teacher-avatar" style="width:32px;height:32px;font-size:15px">\uD83E\uDDD1\u200D\uD83C\uDFEB</div>';
   html += '</div>';
 
-  /* ── 피드백 카드 ── */
+  /* ── 피드백 카드 (평가받기/종료 시에만 표시) ── */
   if (turn && breakdown.length > 0) {
+    html += '<div class="turn-feedback" style="display:none">';
     html += '<div style="margin-top:8px;border:1px solid #334155;border-radius:12px;overflow:hidden;font-size:13px">';
 
     /* 모범 답변 */
@@ -746,6 +765,7 @@ function appendToHistory(parentMsg, teacherInput, score) {
     }
 
     html += '</div>';
+    html += '</div>'; /* /turn-feedback */
   }
 
   var div = document.createElement('div');
@@ -794,7 +814,95 @@ function requestEval() {
 /* ════════════════════════════════════════════════════
    전체 평가 화면
    ════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════
+   항목별 점수 계산 (0-100%)
+   ════════════════════════════════════════════════════ */
+function evaluateCategories(text) {
+  var result = { empathy: 0, solution: 0, fact: 0, followup: 0 };
+  for (var i = 0; i < RUBRIC.length; i++) {
+    var cfg = RUBRIC[i];
+    if (cfg.penalty) continue;
+    var hits = 0;
+    for (var j = 0; j < cfg.words.length; j++) {
+      if (text.includes(cfg.words[j])) hits++;
+    }
+    var earned = Math.min(cfg.max, hits * cfg.perHit);
+    result[cfg.key] = cfg.max > 0 ? Math.round((earned / cfg.max) * 100) : 0;
+  }
+  return result;
+}
+
+/* ════════════════════════════════════════════════════
+   레이더 차트 (SVG)
+   ════════════════════════════════════════════════════ */
+function drawRadarChart(scores) {
+  var R    = 100;
+  var axes = [
+    { key:'empathy',  label:'공감 표현', color:'#f59e0b', angle: -Math.PI/2 },
+    { key:'solution', label:'해결 방향', color:'#3b82f6', angle:  0          },
+    { key:'fact',     label:'사실 기반', color:'#22c55e', angle:  Math.PI/2  },
+    { key:'followup', label:'후속 약속', color:'#a78bfa', angle:  Math.PI    },
+  ];
+  var svg = '';
+
+  // 배경 격자 (25% 단위)
+  [0.25, 0.5, 0.75, 1.0].forEach(function(ratio) {
+    var r = R * ratio;
+    var pts = axes.map(function(ax) {
+      return (r * Math.cos(ax.angle)).toFixed(2) + ',' + (r * Math.sin(ax.angle)).toFixed(2);
+    }).join(' ');
+    svg += '<polygon points="' + pts + '" fill="none" stroke="rgba(51,65,85,.55)" stroke-width="1"/>';
+    if (ratio < 1) {
+      svg += '<text x="3" y="' + (-r + 3).toFixed(1) + '" font-size="8" fill="rgba(130,148,167,.6)" font-family="sans-serif">' + Math.round(ratio * 100) + '%</text>';
+    }
+  });
+
+  // 축 선
+  axes.forEach(function(ax) {
+    svg += '<line x1="0" y1="0" x2="' + (R * Math.cos(ax.angle)).toFixed(2) + '" y2="' + (R * Math.sin(ax.angle)).toFixed(2) + '" stroke="rgba(51,65,85,.7)" stroke-width="1"/>';
+  });
+
+  // 데이터 폴리곤
+  var dataPts = axes.map(function(ax) {
+    var v = Math.min(100, Math.max(0, scores[ax.key] || 0));
+    var r = (v / 100) * R;
+    return (r * Math.cos(ax.angle)).toFixed(2) + ',' + (r * Math.sin(ax.angle)).toFixed(2);
+  }).join(' ');
+  svg += '<polygon points="' + dataPts + '" fill="rgba(99,102,241,.22)" stroke="#6366f1" stroke-width="2" stroke-linejoin="round"/>';
+
+  // 데이터 포인트 + 레이블
+  axes.forEach(function(ax) {
+    var v = Math.min(100, Math.max(0, scores[ax.key] || 0));
+    var r = (v / 100) * R;
+    var px = (r * Math.cos(ax.angle)).toFixed(2);
+    var py = (r * Math.sin(ax.angle)).toFixed(2);
+
+    // 포인트
+    svg += '<circle cx="' + px + '" cy="' + py + '" r="4.5" fill="' + ax.color + '" stroke="#0f172a" stroke-width="1.5"/>';
+
+    // 레이블 위치 (축 끝 + 여백)
+    var lr = R + 24;
+    var lx = lr * Math.cos(ax.angle);
+    var ly = lr * Math.sin(ax.angle);
+    var anchor = Math.abs(Math.cos(ax.angle)) < 0.15 ? 'middle' : (Math.cos(ax.angle) > 0 ? 'start' : 'end');
+    var baselineShift = Math.sin(ax.angle) < -0.5 ? -6 : 4;
+
+    svg += '<text x="' + lx.toFixed(1) + '" y="' + (ly + baselineShift).toFixed(1) + '" text-anchor="' + anchor + '" font-size="11" fill="#94a3b8" font-family="sans-serif">' + ax.label + '</text>';
+    svg += '<text x="' + lx.toFixed(1) + '" y="' + (ly + baselineShift + 13).toFixed(1) + '" text-anchor="' + anchor + '" font-size="11" fill="' + ax.color + '" font-weight="700" font-family="sans-serif">' + v + '%</text>';
+  });
+
+  var el = document.getElementById('radar-svg');
+  if (el) el.innerHTML = svg;
+}
+
+function revealAllFeedback() {
+  document.querySelectorAll('.turn-feedback').forEach(function(el) {
+    el.style.display = 'block';
+  });
+}
+
 function showEndScreen() {
+  revealAllFeedback();
   state.phase = 'complete';
 
   // 입력 영역 및 학부모 현재 말풍선 숨기기
@@ -837,6 +945,18 @@ function showEndScreen() {
   badge.style.color       = tColor;
   badge.textContent       = tLabel;
   $('end-score').style.color = tColor;
+
+  // ── 레이더 차트 (항목별 평균) ─────────────────────
+  var catTotals = { empathy: 0, solution: 0, fact: 0, followup: 0 };
+  var catCount  = state.turnHistory.length;
+  if (catCount > 0) {
+    state.turnHistory.forEach(function(h) {
+      var cats = evaluateCategories(h.teacherInput || '');
+      Object.keys(catTotals).forEach(function(k) { catTotals[k] += cats[k]; });
+    });
+    Object.keys(catTotals).forEach(function(k) { catTotals[k] = Math.round(catTotals[k] / catCount); });
+  }
+  drawRadarChart(catTotals);
 
   // ── 턴별 점수 + 모범 답변 비교 ───────────────────
   const completedTurns = state.allScores.length;

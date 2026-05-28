@@ -209,10 +209,10 @@ function submitResponse() {
   $('teacher-input-wrap').style.display = 'none';
 
   // 점수 계산 (배경 처리, 화면에 즉시 표시 안 함)
-  const turn   = state.scenario.turns[state.turnIndex];
-  const score  = evaluateInput(text, turn);
+  const turn                          = state.scenario.turns[state.turnIndex];
+  const { score, breakdown, lengthBonus } = evaluateInput(text, turn);
   state.allScores.push(score);
-  state.turnHistory.push({ parentMsg: turn.parentMessage, teacherInput: text, score });
+  state.turnHistory.push({ parentMsg: turn.parentMessage, teacherInput: text, score, breakdown, lengthBonus });
 
   // 감정 바만 업데이트
   const delta = score >= 70 ? -18 : score >= 40 ? 3 : 14;
@@ -273,33 +273,44 @@ function appendToHistory(parentMsg, teacherInput, score) {
 }
 
 /* ════════════════════════════════════════════════════
-   키워드 자동 평가
+   키워드 자동 평가  →  { score, breakdown, lengthBonus }
    ════════════════════════════════════════════════════ */
 function evaluateInput(text, turn) {
-  // 15자 미만은 의미 있는 답변으로 보지 않음
-  if (text.length < 15) return 0;
+  if (text.length < 15) return { score: 0, breakdown: [], lengthBonus: 0 };
 
-  let total = 40; // 기본 점수
+  let total = 40;
+  const breakdown = [];
 
   for (const cfg of RUBRIC) {
-    const hits = cfg.words.filter(w => text.includes(w)).length;
+    const hitWords = cfg.words.filter(w => text.includes(w));
+    const hits     = hitWords.length;
+    let pts;
 
     if (cfg.penalty) {
-      // 방어적 표현: 개당 -15점
-      total += hits * cfg.perHit;
+      pts = hits * cfg.perHit;                                         // 음수
     } else if (cfg.tiers) {
-      // 공감·해결: 2단계 점수 (1개 → tiers[0], 2개↑ → tiers[1])
-      total += hits === 0 ? 0 : hits === 1 ? cfg.tiers[0] : cfg.tiers[1];
+      pts = hits === 0 ? 0 : hits === 1 ? cfg.tiers[0] : cfg.tiers[1];
     } else {
-      // 사실·후속: 1개 이상이면 최대치
-      total += Math.min(cfg.max, hits * cfg.perHit);
+      pts = Math.min(cfg.max, hits * cfg.perHit);
     }
+
+    total += pts;
+    breakdown.push({
+      key:      cfg.key,
+      label:    cfg.label,
+      icon:     cfg.icon,
+      maxPts:   cfg.penalty ? 0 : (cfg.tiers ? cfg.tiers[1] : cfg.max),
+      earned:   pts,
+      hits,
+      hitWords: hitWords.slice(0, 3),
+      penalty:  !!cfg.penalty,
+    });
   }
 
-  // 60자 이상 성실한 답변 보너스
-  if (text.length >= 60) total += 5;
+  const lengthBonus = text.length >= 60 ? 5 : 0;
+  total += lengthBonus;
 
-  return Math.max(0, Math.min(100, total));
+  return { score: Math.max(0, Math.min(100, total)), breakdown, lengthBonus };
 }
 
 /* ════════════════════════════════════════════════════
@@ -387,29 +398,124 @@ function showEndScreen() {
     </div>`;
   }).join('');
 
-  // ── 턴별 모범 답변 섹션 ──────────────────────────
+  // ── 턴별 내 답변 ↔ 모범 답변 비교 카드 ──────────────
   const modelSection = $('end-model-section');
   if (modelSection) {
     modelSection.innerHTML = state.turnHistory.map((h, i) => {
-      const turn  = state.scenario.turns[i];
+      const turn = state.scenario.turns[i];
       if (!turn) return '';
+
       const sc    = h.score;
-      const scCol = sc >= 70 ? '#22c55e' : sc >= 40 ? '#f59e0b' : '#ef4444';
+      const scCol = sc >= 80 ? '#22c55e' : sc >= 60 ? '#3b82f6' : sc >= 40 ? '#f59e0b' : '#ef4444';
+      const bd    = h.breakdown || [];
+
+      /* ── 루브릭 칩 ── */
+      const FEEDBACK = {
+        empathy:  '"많이 놀라셨겠어요", "충분히 이해합니다" 같은 공감 표현으로 마음을 먼저 받아주세요.',
+        solution: '"확인하겠습니다", "이야기 나눠보겠습니다" 같은 구체적인 행동 계획을 제시해보세요.',
+        fact:     '상황·처치 내용·경위 등 객관적 사실을 함께 설명하면 신뢰감이 높아져요.',
+        followup: '"연락드리겠습니다", "금요일까지 알려드릴게요" 등 명확한 후속 약속을 추가해보세요.',
+      };
+
+      const chips = bd.map(c => {
+        if (c.penalty && c.hits === 0) return '';        // 방어적: 해당 없으면 생략
+        let bg, border, color, mark;
+        if (c.penalty) {
+          bg='rgba(239,68,68,.12)'; border='rgba(239,68,68,.3)'; color='#f87171'; mark='⚠️';
+        } else if (c.earned >= c.maxPts && c.maxPts > 0) {
+          bg='rgba(34,197,94,.12)';  border='rgba(34,197,94,.3)';  color='#4ade80'; mark='✅';
+        } else if (c.earned > 0) {
+          bg='rgba(245,158,11,.12)'; border='rgba(245,158,11,.3)'; color='#fbbf24'; mark='🟡';
+        } else {
+          bg='rgba(239,68,68,.08)';  border='rgba(239,68,68,.2)';  color='#f87171'; mark='❌';
+        }
+        const pts = c.penalty ? `${c.earned}점` : `${c.earned}/${c.maxPts}점`;
+        return `<span style="display:inline-flex;align-items:center;gap:3px;padding:3px 9px;
+                             background:${bg};border:1px solid ${border};border-radius:12px;
+                             font-size:11px;font-weight:700;color:${color}">
+                  ${mark} ${c.label} ${pts}
+                </span>`;
+      }).join('');
+
+      const lbChip = h.lengthBonus
+        ? `<span style="display:inline-flex;align-items:center;gap:3px;padding:3px 9px;
+                        background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);
+                        border-radius:12px;font-size:11px;font-weight:700;color:#a5b4fc">
+             ⭐ 성실도 +5
+           </span>` : '';
+
+      /* ── 미달 항목 피드백 ── */
+      const missing = bd.filter(c => !c.penalty && c.maxPts > 0 && c.earned < c.maxPts);
+      const feedbackHtml = missing.length === 0
+        ? `<div style="margin-top:8px;font-size:12px;color:#4ade80;font-weight:600">
+             ✅ 모든 평가 항목을 잘 포함한 답변이에요!
+           </div>`
+        : `<div style="margin-top:8px;padding:10px 12px;
+                       background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.18);
+                       border-radius:8px">
+             ${missing.map(c => `
+               <div style="margin-bottom:5px;line-height:1.55;font-size:12px;color:var(--txt2)">
+                 <span style="color:#fbbf24;font-weight:700">${c.icon} ${c.label}</span>
+                 &nbsp;— ${FEEDBACK[c.key] || ''}
+               </div>`).join('')}
+           </div>`;
+
+      /* ── 방어적 표현 경고 ── */
+      const defItem   = bd.find(c => c.penalty && c.hits > 0);
+      const defHtml   = defItem
+        ? `<div style="margin-top:6px;padding:6px 10px;font-size:12px;
+                       background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);
+                       border-radius:8px;color:#f87171">
+             ⚠️ 방어적 표현이 감지됐어요: <strong>${defItem.hitWords.join(', ')}</strong>
+           </div>` : '';
+
       return `
-      <div style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border2)">
-        <div style="font-size:11px;color:var(--txt3);margin-bottom:8px;font-weight:700">
-          ${i+1}번째 대화
-          <span style="color:${scCol};margin-left:6px">${sc}점</span>
+      <div style="margin-bottom:16px;padding:16px 18px;background:rgba(15,23,42,.6);
+                  border:1px solid var(--border2);border-radius:12px">
+
+        <!-- 헤더 -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span style="font-size:11px;color:var(--txt3);font-weight:700">${i+1}번째 대화</span>
+          <span style="font-size:18px;font-weight:900;color:${scCol}">${sc}점</span>
         </div>
-        <div style="font-size:12px;color:var(--txt2);margin-bottom:6px;font-style:italic">
-          학부모: "${escHtml(h.parentMsg.slice(0,60))}${h.parentMsg.length>60?'…':''}"
+
+        <!-- 학부모 발언 -->
+        <div style="font-size:12px;color:var(--txt3);padding:7px 12px;
+                    background:rgba(0,0,0,.2);border-radius:8px;
+                    font-style:italic;line-height:1.55;margin-bottom:12px">
+          👩 "${escHtml(h.parentMsg.slice(0,80))}${h.parentMsg.length>80?'…':''}"
         </div>
-        <div style="font-size:13px;color:var(--txt);padding:10px 14px;
-                    background:rgba(99,102,241,.07);border-left:3px solid #6366f1;
-                    border-radius:0 8px 8px 0;margin-bottom:6px;line-height:1.6">
-          💬 모범: "${escHtml(turn.modelAnswer)}"
+
+        <!-- 내 답변 -->
+        <div style="margin-bottom:14px">
+          <div style="font-size:11px;color:#93c5fd;font-weight:700;margin-bottom:6px">
+            👩‍🏫 내 답변
+          </div>
+          <div style="font-size:13px;color:var(--txt);padding:10px 14px;
+                      background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);
+                      border-radius:8px;line-height:1.75;margin-bottom:8px">
+            ${escHtml(h.teacherInput)}
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">
+            ${chips}${lbChip}
+          </div>
+          ${feedbackHtml}${defHtml}
         </div>
-        <div style="font-size:11px;color:var(--txt3)">${turn.tip}</div>
+
+        <!-- 모범 답변 -->
+        <div>
+          <div style="font-size:11px;color:#c4b5fd;font-weight:700;margin-bottom:6px">
+            💬 모범 답변
+          </div>
+          <div style="font-size:13px;color:var(--txt);padding:10px 14px;
+                      background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.25);
+                      border-left:3px solid #6366f1;border-radius:0 8px 8px 0;
+                      line-height:1.75;margin-bottom:8px;font-style:italic">
+            ${escHtml(turn.modelAnswer)}
+          </div>
+          <div style="font-size:12px;color:var(--txt3);line-height:1.55">${turn.tip}</div>
+        </div>
+
       </div>`;
     }).join('');
   }

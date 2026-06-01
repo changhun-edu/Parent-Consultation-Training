@@ -10,7 +10,7 @@
 
     /* ── 헤더 ──────────────────────────────────── */
     .training-header {
-      background: rgba(15,23,42,.97); border-bottom: 1px solid var(--border);
+      background: rgba(20,32,55,.98); border-bottom: 1px solid rgba(99,102,241,.2);
       padding: 12px 20px; position: sticky; top: 0; z-index: 100;
       backdrop-filter: blur(8px);
     }
@@ -20,10 +20,10 @@
     }
     .training-header__info { flex: 1; min-width: 0; }
     .training-header__title {
-      font-size: 17px; font-weight: 800; color: #f1f5f9;
+      font-size: 17px; font-weight: 800; color: #ffffff;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .training-header__meta { font-size: 13px; color: #b0bfd0; margin-top: 1px; }
+    .training-header__meta { font-size: 13px; color: #c4d0e0; margin-top: 1px; }
 
     /* ── 고정 정보 바 (배너 + 감정 바 묶음) ──────── */
     .sticky-info-bar {
@@ -228,6 +228,20 @@
     .end-btns { display: flex; gap: 10px; }
     .end-btns .btn { flex: 1; justify-content: center; }
 
+    /* ── 감정 바 가시성 강제 오버라이드 ─────────── */
+    .emotion-bar {
+      background: rgba(36,52,74,.9) !important;
+      border: 1px solid rgba(99,102,241,.25) !important;
+    }
+    .emotion-bar__label { color: #c4d0e0 !important; font-weight: 600 !important; }
+    .emotion-bar__track { background: rgba(255,255,255,.15) !important; height: 10px !important; border-radius: 5px !important; }
+    .emotion-bar__text  { color: #e2e8f0 !important; }
+    .emotion-bar__fill  { min-width: 4px; height: 100% !important; }
+
+    /* ── ← 목록 버튼 가시성 ─────────────────────── */
+    .btn--ghost { color: #c4d0e0 !important; border-color: rgba(148,163,184,.4) !important; }
+    .btn--ghost:hover { color: #f1f5f9 !important; }
+
     @media (max-width: 480px) {
       .parent-bubble__body, .teacher-bubble__body { max-width: 90%; font-size: 15px; }
       #teacher-textarea { font-size: 15px; }
@@ -239,19 +253,21 @@
 <!-- 헤더 -->
 <header class="training-header">
   <div class="training-header__inner">
-    <a href="index.html" class="btn btn--ghost btn--sm">← 목록</a>
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid rgba(180,200,220,.5);border-radius:9px;background:transparent;color:#d0dcea;font-size:14px;font-weight:600;text-decoration:none;transition:all .2s;">← 목록</a>
     <div class="training-header__info">
       <div class="training-header__title" id="scenario-title">—</div>
       <div class="training-header__meta">
         <span id="scenario-category" style="font-weight:700"></span>&nbsp;·&nbsp;
         <span id="difficulty-badge" class="badge"></span>&nbsp;·&nbsp;
-        <span id="turn-count" style="color:#b0bfd0">1번째 상황</span>
+        <span id="turn-count" style="color:#c4d0e0">1번째 상황</span>
       </div>
     </div>
     <button id="eval-btn" onclick="requestEval()"
-      style="padding:7px 14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);
-             border:none;border-radius:8px;color:#fff;font-size: 14px;font-weight:700;
-             cursor:pointer;white-space:nowrap;flex-shrink:0;opacity:.5;pointer-events:none;"
+      style="padding:7px 16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);
+             border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;
+             cursor:pointer;white-space:nowrap;flex-shrink:0;
+             opacity:.8;pointer-events:none;
+             box-shadow:0 2px 8px rgba(99,102,241,.4),0 0 0 1px rgba(139,92,246,.5);"
       title="대화를 진행하면 평가받기가 활성화됩니다">
       📊 평가받기
     </button>
@@ -266,15 +282,22 @@
   <span id="scenario-situation"></span>
 </div>
 
-<div class="emotion-wrap">
-  <div class="emotion-bar">
-    <span class="emotion-bar__label">👩 <span id="parent-name-header">학부모</span> 감정</span>
-    <div class="emotion-bar__track">
-      <div class="emotion-bar__fill" id="emotion-fill" style="width:70%;background:#f59e0b"></div>
+<div style="max-width:720px;margin:10px auto 0;padding:0 20px;">
+  <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;
+              background:rgba(36,52,74,.95);border:1px solid rgba(99,102,241,.3);
+              border-radius:9px;">
+    <span style="font-size:14px;color:#c4d0e0;font-weight:600;white-space:nowrap;">
+      👩 <span id="parent-name-header">학부모</span> 감정
+    </span>
+    <div style="flex:1;height:10px;background:rgba(255,255,255,.15);
+                border-radius:5px;overflow:hidden;">
+      <div id="emotion-fill"
+           style="width:70%;height:100%;background:#f59e0b;
+                  border-radius:5px;transition:width .9s ease,background-color .9s ease;"></div>
     </div>
-    <span class="emotion-bar__text">
-      <span id="emotion-label" style="color:#fbbf24;font-weight:700">다소 불안</span>
-      &nbsp;<span id="emotion-value" style="color:#b0bfd0;font-size: 13px">70</span>
+    <span style="font-size:14px;font-weight:700;white-space:nowrap;color:#e2e8f0;min-width:80px;text-align:right;">
+      <span id="emotion-label" style="color:#fbbf24;font-weight:700;">다소 불안</span>
+      &nbsp;<span id="emotion-value" style="color:#c4d0e0;font-size:13px;">70</span>
     </span>
   </div>
 </div><!-- /emotion-wrap -->
@@ -300,7 +323,7 @@
     <div class="teacher-bubble__body">
       <div id="teacher-bubble-text"></div>
       <div class="teacher-bubble__meta">
-        <span style="font-size: 13px;color:#94a3b8">내 답변</span>
+        <span style="font-size: 13px;color:#b0bfd0">내 답변</span>
         <span class="teacher-bubble__score" id="teacher-bubble-score"></span>
       </div>
     </div>
@@ -398,7 +421,7 @@
     </div>
 
     <div class="end-btns">
-      <button class="btn btn--ghost" onclick="restartScenario()">🔄 다시 연습</button>
+      <button onclick="restartScenario()" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border:1px solid rgba(180,200,220,.5);border-radius:9px;background:transparent;color:#d0dcea;font-size:16px;font-weight:600;cursor:pointer;">🔄 다시 연습</button>
       <a href="index.html" class="btn btn--primary">🏠 다른 시나리오</a>
     </div>
   </div>
@@ -993,7 +1016,7 @@ function restartScenario() {
   // 평가받기 버튼 비활성화
   const btn = $('eval-btn');
   if (btn) {
-    btn.style.opacity       = '.5';
+    btn.style.opacity       = '.75';
     btn.style.pointerEvents = 'none';
   }
 
@@ -1012,7 +1035,7 @@ function updateProgress() {
 
 function updateEmotionBar(level, instant) {
   const hex   = level > 70 ? '#ef4444' : level > 40 ? '#f59e0b' : '#22c55e';
-  const color = level > 70 ? 'var(--red)' : level > 40 ? 'var(--yellow)' : 'var(--green)';
+  const color = level > 70 ? '#f87171' : level > 40 ? '#fbbf24' : '#4ade80';
   const label = level > 70 ? '격앙' : level > 40 ? '다소 불안' : '안정';
 
   const fill = $('emotion-fill');
@@ -1048,7 +1071,7 @@ function showError(msg) {
     <div style="display:flex;align-items:center;justify-content:center;
                 min-height:100vh;flex-direction:column;gap:16px">
       <p style="color:#cbd5e1">${escHtml(msg)}</p>
-      <a href="index.html" class="btn btn--ghost">← 홈으로</a>
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border:1px solid rgba(180,200,220,.5);border-radius:9px;background:transparent;color:#d0dcea;font-size:16px;font-weight:600;text-decoration:none;">← 홈으로</a>
     </div>`;
 }
 

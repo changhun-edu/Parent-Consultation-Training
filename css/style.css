@@ -76,15 +76,15 @@ input, textarea { font-family: inherit; }
   display: flex; align-items: center; justify-content: center;
   font-size: 16px;
 }
-.site-header__title { font-size: 15px; font-weight: 800; color: var(--txt); }
-.site-header__sub   { font-size: 11px; color: var(--txt3); }
+.site-header__title { font-size: 17px; font-weight: 800; color: var(--txt); }
+.site-header__sub   { font-size: 13px; color: var(--txt3); }
 
 /* ── 버튼 ───────────────────────────────────────────── */
 .btn {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 10px 20px;
   border: none; border-radius: var(--radius-sm);
-  font-size: 14px; font-weight: 600;
+  font-size: 16px; font-weight: 600;
   transition: all .2s;
 }
 .btn:hover { transform: translateY(-1px); }
@@ -104,8 +104,8 @@ input, textarea { font-family: inherit; }
 }
 .btn--ghost:hover { border-color: var(--indigo); color: var(--txt); background: rgba(99,102,241,.08); }
 
-.btn--sm { padding: 7px 14px; font-size: 12px; }
-.btn--lg { padding: 14px 28px; font-size: 15px; }
+.btn--sm { padding: 7px 14px; font-size: 14px; }
+.btn--lg { padding: 14px 28px; font-size: 17px; }
 .btn--full { width: 100%; justify-content: center; }
 .btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
 
@@ -114,7 +114,7 @@ input, textarea { font-family: inherit; }
   display: inline-flex; align-items: center; gap: 4px;
   padding: 3px 10px;
   border-radius: 20px;
-  font-size: 11px; font-weight: 600;
+  font-size: 13px; font-weight: 600;
 }
 
 /* 난이도 배지 */
@@ -152,7 +152,7 @@ input, textarea { font-family: inherit; }
   border: 1px solid var(--border2);
   border-radius: var(--radius-sm);
 }
-.emotion-bar__label { font-size: 12px; color: var(--txt3); white-space: nowrap; }
+.emotion-bar__label { font-size: 14px; color: var(--txt3); white-space: nowrap; }
 .emotion-bar__track {
   flex: 1;
   height: 6px;
@@ -166,7 +166,7 @@ input, textarea { font-family: inherit; }
   transition: width .9s ease, background-color .9s ease;
 }
 .emotion-bar__text {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   min-width: 36px;
   text-align: right;

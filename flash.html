@@ -404,7 +404,7 @@
   </div>
 
   <!-- Controls -->
-  <div class="card-controls" id="card-controls" style="display:none">
+  <div class="card-controls" id="card-controls" style="display:none" onclick="event.stopPropagation()">
     <button class="ctrl-btn ctrl-btn-prev" id="btn-prev">← 이전</button>
     <button class="ctrl-btn ctrl-btn-flip" id="btn-flip">뒤집기 →</button>
     <button class="ctrl-btn ctrl-btn-next" id="btn-next">다음 →</button>
@@ -633,11 +633,13 @@ function flipCard() {
   document.getElementById('btn-flip').textContent = isFlipped ? '← 문제 보기' : '뒤집기 →';
 }
 
-document.getElementById('btn-flip').addEventListener('click', flipCard);
-document.getElementById('btn-prev').addEventListener('click', () => {
+document.getElementById('btn-flip').addEventListener('click', (e) => { e.stopPropagation(); flipCard(); });
+document.getElementById('btn-prev').addEventListener('click', (e) => {
+  e.stopPropagation();
   if (currentIdx > 0) { currentIdx--; isFlipped = false; renderCard(); }
 });
-document.getElementById('btn-next').addEventListener('click', () => {
+document.getElementById('btn-next').addEventListener('click', (e) => {
+  e.stopPropagation();
   if (currentIdx < deck.length - 1) { currentIdx++; isFlipped = false; renderCard(); }
 });
 

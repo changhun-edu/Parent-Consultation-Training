@@ -1,394 +1,553 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>핵심 가이드 – 학부모 상담 훈련</title>
-  <link rel="stylesheet" href="css/style.css">
-  <style>
-    /* ── 탭 내비 ────────────────────────────────────── */
-    .guide-tabs {
-      position: sticky; top: 57px; z-index: 80;
-      background: rgba(15,23,42,.97);
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(8px);
-    }
-    .guide-tabs__inner {
-      max-width: 860px; margin: 0 auto;
-      display: flex; overflow-x: auto; gap: 0;
-      scrollbar-width: none;
-    }
-    .guide-tabs__inner::-webkit-scrollbar { display: none; }
-    .tab-btn {
-      flex-shrink: 0; padding: 13px 20px;
-      background: transparent; border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--txt3); font-size: 13px; font-weight: 600;
-      cursor: pointer; white-space: nowrap;
-      transition: color .18s, border-color .18s;
-    }
-    .tab-btn.active { color: #a5b4fc; border-bottom-color: #6366f1; }
-    .tab-btn:hover:not(.active) { color: var(--txt2); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>핵심 가이드 – 학부모 상담 훈련</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:   #0f1e35;
+    --navy2:  #162844;
+    --navy3:  #1e3558;
+    --amber:  #f5a623;
+    --amber2: #e8941a;
+    --teal:   #2ec4b6;
+    --cream:  #fdf6ec;
+    --cream2: #f7ede0;
+    --text:   #1a2a3e;
+    --muted:  #5a7080;
+    --border: #d6e0eb;
+    --green:  #27ae60;
+    --yellow: #f39c12;
+    --red:    #e74c3c;
+    --card-shadow: 0 2px 16px rgba(15,30,53,.10);
+    --card-shadow-hover: 0 8px 32px rgba(15,30,53,.18);
+    --radius: 14px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
 
-    /* ── 공통 섹션 ──────────────────────────────────── */
-    .guide-body { max-width: 860px; margin: 0 auto; padding: 32px 20px 60px; }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-    .section-head {
-      font-size: 11px; font-weight: 800; letter-spacing: .1em;
-      color: var(--txt3); text-transform: uppercase;
-      margin-bottom: 16px; margin-top: 36px;
-    }
-    .section-head:first-child { margin-top: 0; }
-    .intro-box {
-      padding: 16px 20px;
-      background: rgba(99,102,241,.07);
-      border: 1px solid rgba(99,102,241,.2);
-      border-radius: 12px; margin-bottom: 24px;
-      font-size: 13px; color: var(--txt2); line-height: 1.75;
-    }
+  /* ── NAV ── */
+  .nav {
+    background: var(--navy);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  }
+  .nav-left { display: flex; align-items: center; gap: 14px; }
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    color: rgba(255,255,255,.6); font-size: 13px; font-weight: 500;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.15);
+    transition: all .2s;
+  }
+  .back-btn:hover { color: #fff; background: rgba(255,255,255,.1); }
+  .nav-brand {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+  }
+  .nav-logo {
+    width: 32px; height: 32px;
+    background: var(--amber); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+  }
+  .nav-title-ko {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 700; font-size: 15px; color: #fff;
+  }
+  .nav-title-en { font-size: 10px; color: rgba(255,255,255,.4); font-weight: 300; }
+  .nav-link {
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 13px; font-weight: 500;
+    text-decoration: none; color: rgba(255,255,255,.75);
+    border: 1px solid rgba(255,255,255,.15); transition: all .2s;
+  }
+  .nav-link:hover { background: rgba(255,255,255,.12); color: #fff; }
+  .nav-link.active { background: var(--amber); color: var(--navy); border-color: var(--amber); font-weight: 700; }
 
-    /* ── 루브릭 카드 ────────────────────────────────── */
-    .rubric-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 14px; margin-bottom: 14px;
-    }
-    .rubric-card {
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 14px; overflow: hidden;
-    }
-    .rubric-card__head {
-      display: flex; align-items: center; gap: 10px;
-      padding: 14px 16px 12px;
-      border-bottom: 1px solid var(--border2);
-    }
-    .rubric-card__icon { font-size: 22px; flex-shrink: 0; }
-    .rubric-card__label { font-size: 14px; font-weight: 800; }
-    .rubric-card__pts {
-      margin-left: auto; font-size: 11px; font-weight: 700;
-      padding: 2px 10px; border-radius: 10px;
-    }
-    .rubric-card__body { padding: 14px 16px; }
-    .rubric-card__principle {
-      font-size: 12px; color: var(--txt3); margin-bottom: 12px;
-      padding: 8px 12px; background: rgba(0,0,0,.2); border-radius: 8px;
-      font-style: italic; line-height: 1.6;
-    }
-    .eg-label {
-      font-size: 10px; font-weight: 800; letter-spacing: .06em;
-      margin-bottom: 5px; margin-top: 10px;
-    }
-    .eg-good { color: #4ade80; }
-    .eg-bad  { color: #f87171; }
-    .eg-box {
-      font-size: 12px; line-height: 1.65; padding: 8px 12px;
-      border-radius: 8px; color: var(--txt2);
-    }
-    .eg-box--good { background: rgba(34,197,94,.06); border-left: 3px solid #22c55e; }
-    .eg-box--bad  { background: rgba(239,68,68,.06);  border-left: 3px solid #ef4444; }
-    .rubric-card__words {
-      display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px;
-    }
-    .word-chip {
-      font-size: 11px; padding: 2px 9px;
-      background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.2);
-      border-radius: 8px; color: #a5b4fc;
-    }
-    /* 패널티 카드 */
-    .penalty-card {
-      background: rgba(239,68,68,.05); border: 1px solid rgba(239,68,68,.2);
-      border-radius: 14px; padding: 16px 20px;
-    }
-    .penalty-card__head {
-      display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
-    }
-    .penalty-card__words { display: flex; flex-wrap: wrap; gap: 6px; }
-    .penalty-chip {
-      font-size: 11px; padding: 3px 10px;
-      background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25);
-      border-radius: 8px; color: #f87171;
-    }
+  /* ── HERO ── */
+  .hero {
+    background: var(--navy);
+    padding: 48px 24px 56px;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 50% 60% at 15% 70%, rgba(46,196,182,.1) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 50% at 85% 25%, rgba(245,166,35,.09) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(245,166,35,.15);
+    border: 1px solid rgba(245,166,35,.35);
+    color: var(--amber); font-size: 12px; font-weight: 600;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 18px;
+    letter-spacing: .04em;
+  }
+  .hero h1 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: clamp(22px, 4vw, 36px); font-weight: 900;
+    color: #fff; margin-bottom: 10px;
+  }
+  .hero h1 span { color: var(--amber); }
+  .hero-sub { color: rgba(255,255,255,.55); font-size: 14px; line-height: 1.7; }
 
-    /* ── 유형별 전략 ────────────────────────────────── */
-    .strategy-card {
-      border-radius: 14px; border: 1px solid; padding: 20px;
-      margin-bottom: 16px;
-    }
-    .strategy-card__top {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-    }
-    .strategy-card__badge {
-      font-size: 13px; font-weight: 800; padding: 4px 14px;
-      border-radius: 20px;
-    }
-    .strategy-card__turns {
-      font-size: 11px; padding: 3px 10px; border-radius: 10px;
-      font-weight: 700;
-    }
-    .flow-steps {
-      display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
-      margin-bottom: 14px;
-    }
-    .flow-step {
-      font-size: 12px; font-weight: 700; padding: 6px 14px;
-      border-radius: 20px; border: 1px solid;
-    }
-    .flow-arrow {
-      font-size: 14px; color: var(--txt3); flex-shrink: 0;
-    }
-    .strategy-card__desc {
-      font-size: 13px; color: var(--txt2); line-height: 1.75;
-    }
-    .strategy-card__warn {
-      margin-top: 12px; padding: 10px 14px;
-      background: rgba(245,158,11,.07); border: 1px solid rgba(245,158,11,.2);
-      border-radius: 10px; font-size: 12px; color: #fbbf24; line-height: 1.6;
-    }
+  /* ── TAB NAV ── */
+  .tab-nav-wrap {
+    background: var(--navy2);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    position: sticky; top: 60px; z-index: 90;
+  }
+  .tab-nav {
+    max-width: 900px; margin: 0 auto;
+    display: flex; gap: 0;
+    padding: 0 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tab-nav::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    padding: 14px 20px;
+    font-size: 13px; font-weight: 600;
+    color: rgba(255,255,255,.5);
+    background: none; border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer; transition: all .18s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: rgba(255,255,255,.85); }
+  .tab-btn.active { color: var(--amber); border-bottom-color: var(--amber); }
 
-    /* ── 표현 카드 ──────────────────────────────────── */
-    .phrase-section { margin-bottom: 28px; }
-    .phrase-section__title {
-      font-size: 13px; font-weight: 800; margin-bottom: 10px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .phrase-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 8px;
-    }
-    .phrase-card {
-      padding: 12px 14px;
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 10px; font-size: 13px; color: var(--txt2);
-      cursor: pointer; transition: all .18s; line-height: 1.55;
-      position: relative;
-    }
-    .phrase-card:hover {
-      border-color: rgba(99,102,241,.45);
-      color: var(--txt); background: rgba(99,102,241,.08);
-    }
-    .phrase-card__copy {
-      position: absolute; top: 8px; right: 8px;
-      font-size: 11px; color: var(--txt3); opacity: 0;
-      transition: opacity .18s;
-    }
-    .phrase-card:hover .phrase-card__copy { opacity: 1; }
-    .phrase-card.copied {
-      border-color: rgba(34,197,94,.45);
-      background: rgba(34,197,94,.07);
-    }
-    .toast {
-      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
-      background: rgba(34,197,94,.9); color: #fff;
-      padding: 8px 20px; border-radius: 20px;
-      font-size: 13px; font-weight: 700;
-      opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 999;
-    }
-    .toast.show { opacity: 1; }
+  /* ── MAIN ── */
+  .main {
+    max-width: 900px; margin: 0 auto;
+    padding: 36px 20px 60px;
+  }
 
-    /* ── 악성 민원 섹션 ─────────────────────────────── */
-    .alert-box {
-      padding: 14px 18px;
-      background: rgba(239,68,68,.06); border: 1px solid rgba(239,68,68,.2);
-      border-radius: 12px; margin-bottom: 12px;
-      font-size: 13px; color: var(--txt2); line-height: 1.75;
-    }
-    .alert-box__title {
-      font-weight: 800; color: #f87171; margin-bottom: 8px; font-size: 13px;
-    }
-    .alert-box ul { padding-left: 18px; }
-    .alert-box li { margin-bottom: 4px; }
+  /* ── SECTION ── */
+  .section { display: none; }
+  .section.active { display: block; }
 
-    .step-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; margin-bottom: 16px; }
-    .step-card {
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 12px; padding: 16px;
-    }
-    .step-card__num {
-      font-size: 24px; font-weight: 900; line-height: 1;
-      background: linear-gradient(135deg, #60a5fa, #818cf8);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      margin-bottom: 6px;
-    }
-    .step-card__title { font-size: 14px; font-weight: 800; color: var(--txt); margin-bottom: 8px; }
-    .step-card__desc { font-size: 12px; color: var(--txt3); line-height: 1.65; }
-    .step-card__examples { margin-top: 10px; }
-    .step-example {
-      font-size: 12px; color: #a5b4fc; padding: 6px 10px;
-      background: rgba(99,102,241,.07); border-left: 2px solid #6366f1;
-      border-radius: 0 6px 6px 0; margin-bottom: 4px; line-height: 1.55;
-    }
+  .section-intro {
+    background: var(--navy);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin-bottom: 28px;
+    color: rgba(255,255,255,.7);
+    font-size: 14px; line-height: 1.75;
+    border-left: 4px solid var(--amber);
+  }
+  .section-intro strong { color: #fff; }
 
-    .keyword-card {
-      background: rgba(245,158,11,.06); border: 1px solid rgba(245,158,11,.2);
-      border-radius: 12px; padding: 16px 18px; margin-bottom: 10px;
-    }
-    .keyword-card__phrase {
-      font-size: 13px; color: #fbbf24; line-height: 1.75; font-style: italic;
-    }
-    .keyword-card__note {
-      font-size: 11px; color: var(--txt3); margin-top: 6px;
-    }
+  /* ── PRINCIPLE CARDS ── */
+  .principle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .principle-card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    box-shadow: var(--card-shadow);
+    border-top: 4px solid transparent;
+    transition: transform .18s, box-shadow .18s;
+  }
+  .principle-card:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-hover); }
+  .principle-card.c1 { border-top-color: var(--amber); }
+  .principle-card.c2 { border-top-color: var(--teal); }
+  .principle-card.c3 { border-top-color: #9b59b6; }
+  .principle-card.c4 { border-top-color: var(--green); }
+  .principle-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .principle-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .principle-icon.c1 { background: #fff8e6; }
+  .principle-icon.c2 { background: #e8fbf9; }
+  .principle-icon.c3 { background: #f4eef9; }
+  .principle-icon.c4 { background: #e8f8ef; }
+  .principle-name {
+    font-size: 15px; font-weight: 700; color: var(--text);
+  }
+  .principle-score {
+    margin-left: auto;
+    font-size: 11px; font-weight: 700; padding: 3px 9px;
+    border-radius: 10px;
+  }
+  .c1 .principle-score { background: #fff3cd; color: #9a6700; }
+  .c2 .principle-score { background: #d1f5f2; color: #1a7a70; }
+  .c3 .principle-score { background: #efe6f9; color: #6b2fa0; }
+  .c4 .principle-score { background: #d4f0e0; color: #1a6b40; }
+  .principle-quote {
+    font-size: 13px; color: var(--muted); font-style: italic;
+    margin-bottom: 12px; line-height: 1.6;
+    border-left: 3px solid var(--border); padding-left: 10px;
+  }
+  .eg-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .eg-row:last-child { margin-bottom: 0; }
+  .eg-label {
+    font-size: 11px; font-weight: 700; padding: 3px 8px;
+    border-radius: 6px; white-space: nowrap; height: fit-content; margin-top: 1px;
+  }
+  .eg-label.good { background: #e8f8ef; color: #1a8a45; }
+  .eg-label.bad  { background: #fdecea; color: #c0392b; }
+  .eg-text { font-size: 12.5px; color: var(--text); line-height: 1.6; }
 
-    .principle-row {
-      display: flex; gap: 8px; align-items: flex-start;
-      padding: 12px 14px;
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 10px; margin-bottom: 8px;
-      font-size: 13px; color: var(--txt2); line-height: 1.65;
-    }
-    .principle-row__bullet {
-      font-size: 16px; flex-shrink: 0; margin-top: 1px;
-    }
+  /* 감점 박스 */
+  .penalty-box {
+    background: #fff5f5;
+    border: 1.5px solid #fcc; border-radius: var(--radius);
+    padding: 20px 22px; margin-bottom: 28px;
+  }
+  .penalty-header {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 700; color: var(--red); margin-bottom: 12px;
+  }
+  .penalty-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .penalty-chip {
+    background: #fdecea; color: #c0392b;
+    font-size: 12px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px;
+    border: 1px solid #f5c0bb;
+  }
 
-    /* ── 대면 전환 박스 ──────────────────────────────── */
-    .face-to-face-box {
-      background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.25);
-      border-radius: 12px; padding: 16px 18px; margin-bottom: 16px;
-    }
-    .face-to-face-box__label {
-      font-size: 11px; font-weight: 800; color: #a5b4fc; margin-bottom: 8px; letter-spacing: .06em;
-    }
-    .face-to-face-box__text {
-      font-size: 13px; color: var(--txt2); line-height: 1.8; font-style: italic;
-    }
+  /* 공통 원칙 */
+  .common-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px; margin-bottom: 28px;
+  }
+  .common-card {
+    background: #fff; border-radius: var(--radius);
+    padding: 18px 16px; box-shadow: var(--card-shadow);
+    text-align: center;
+  }
+  .common-card-icon { font-size: 28px; margin-bottom: 8px; }
+  .common-card-text { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
 
-    @media (max-width: 600px) {
-      .rubric-grid { grid-template-columns: 1fr; }
-      .step-grid    { grid-template-columns: 1fr; }
-      .phrase-grid  { grid-template-columns: 1fr 1fr; }
-    }
-  </style>
+  /* ── 유형별 전략 ── */
+  .strategy-list { display: flex; flex-direction: column; gap: 16px; }
+  .strategy-card {
+    background: #fff; border-radius: var(--radius);
+    padding: 22px 24px; box-shadow: var(--card-shadow);
+    border-left: 5px solid transparent;
+  }
+  .strategy-card.green { border-left-color: var(--green); }
+  .strategy-card.yellow { border-left-color: var(--yellow); }
+  .strategy-card.red { border-left-color: var(--red); }
+  .strategy-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .strategy-badge {
+    font-size: 11px; font-weight: 700; padding: 4px 11px;
+    border-radius: 10px; white-space: nowrap;
+  }
+  .strategy-badge.green { background: #e8f8ef; color: #1a8a45; }
+  .strategy-badge.yellow { background: #fef6e4; color: #b07a10; }
+  .strategy-badge.red { background: #fdecea; color: #c0392b; }
+  .strategy-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .strategy-turns {
+    margin-left: auto; font-size: 11px; color: var(--muted);
+    background: var(--cream2); padding: 3px 9px; border-radius: 8px; font-weight: 600;
+  }
+  .flow-steps {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+    margin-bottom: 12px;
+  }
+  .flow-step {
+    font-size: 12px; font-weight: 600; padding: 4px 11px;
+    background: var(--cream2); color: var(--text);
+    border-radius: 20px;
+  }
+  .flow-arrow { color: var(--muted); font-size: 13px; }
+  .strategy-body {
+    font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 10px;
+  }
+  .strategy-tip {
+    background: var(--cream2); border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px; color: var(--text); line-height: 1.6;
+  }
+  .strategy-tip strong { color: var(--navy); }
+
+  /* ── 핵심 표현 ── */
+  .expr-section { margin-bottom: 28px; }
+  .expr-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 16px; font-weight: 700; color: var(--text);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .expr-title::before {
+    content: ''; display: inline-block;
+    width: 4px; height: 18px;
+    background: var(--amber); border-radius: 2px;
+  }
+  .expr-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .expr-chip {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    color: var(--text); font-size: 13px; font-weight: 500;
+    padding: 7px 16px; border-radius: 8px;
+    cursor: pointer; transition: all .18s;
+    position: relative;
+  }
+  .expr-chip:hover { border-color: var(--navy); background: var(--navy); color: #fff; }
+  .expr-chip.copied {
+    border-color: var(--green); background: #e8f8ef; color: var(--green);
+  }
+  .copy-toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: var(--navy); color: #fff;
+    padding: 10px 20px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+    z-index: 999;
+  }
+  .copy-toast.show { opacity: 1; }
+
+  /* ── 악성민원 ── */
+  .evil-intro {
+    background: #fff5f5; border: 1.5px solid #fcc;
+    border-radius: var(--radius); padding: 18px 22px;
+    margin-bottom: 20px;
+    font-size: 13.5px; line-height: 1.75; color: var(--text);
+  }
+  .evil-intro blockquote {
+    border-left: 3px solid var(--red); padding-left: 12px;
+    color: var(--muted); font-style: italic; margin: 10px 0;
+  }
+  .situation-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .situation-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: #fff; border-radius: 10px;
+    padding: 14px 16px; box-shadow: var(--card-shadow);
+  }
+  .situation-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--red); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  .situation-text { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  .steps3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
+  .step3-card {
+    background: #fff; border-radius: var(--radius);
+    padding: 18px 16px; box-shadow: var(--card-shadow);
+    border-top: 3px solid var(--navy3);
+  }
+  .step3-num {
+    font-size: 11px; font-weight: 700; color: var(--amber);
+    letter-spacing: .1em; margin-bottom: 6px;
+  }
+  .step3-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .step3-examples { display: flex; flex-direction: column; gap: 5px; }
+  .step3-eg {
+    font-size: 12px; color: var(--muted); line-height: 1.5;
+    background: var(--cream2); padding: 5px 10px; border-radius: 6px;
+  }
+
+  .phone-box {
+    background: var(--navy); border-radius: var(--radius);
+    padding: 22px 24px; margin-bottom: 20px;
+  }
+  .phone-box-title {
+    font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 14px;
+  }
+  .phone-rules { display: flex; flex-direction: column; gap: 10px; }
+  .phone-rule { display: flex; gap: 10px; align-items: flex-start; }
+  .phone-rule-icon { font-size: 18px; flex-shrink: 0; }
+  .phone-rule-text { font-size: 13px; color: rgba(255,255,255,.7); line-height: 1.6; }
+  .phone-rule-text strong { color: #fff; }
+
+  .transition-example {
+    background: #fff; border-radius: var(--radius);
+    padding: 18px 22px; box-shadow: var(--card-shadow);
+    border-left: 4px solid var(--teal);
+  }
+  .transition-label {
+    font-size: 11px; font-weight: 700; color: var(--teal);
+    letter-spacing: .08em; margin-bottom: 8px;
+  }
+  .transition-text { font-size: 13px; color: var(--text); line-height: 1.7; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--navy); padding: 28px 24px; margin-top: 20px;
+  }
+  .footer-inner {
+    max-width: 900px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;
+  }
+  .footer-brand { display: flex; align-items: center; gap: 10px; }
+  .footer-logo {
+    width: 28px; height: 28px; background: rgba(245,166,35,.25);
+    border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .footer-name { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.8); }
+  .footer-copy { font-size: 11px; color: rgba(255,255,255,.35); margin-top: 2px; }
+  .footer-links { display: flex; gap: 14px; }
+  .footer-link { font-size: 12px; color: rgba(255,255,255,.45); text-decoration: none; transition: color .15s; }
+  .footer-link:hover { color: var(--amber); }
+  .footer-credit { font-size: 11px; color: rgba(255,255,255,.3); }
+  .footer-credit span { color: var(--amber); }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  .fade-in { animation: fadeUp .35s ease both; }
+
+  @media (max-width: 700px) {
+    .principle-grid { grid-template-columns: 1fr; }
+    .steps3 { grid-template-columns: 1fr; }
+    .common-grid { grid-template-columns: repeat(2,1fr); }
+    .footer-inner { flex-direction: column; align-items: flex-start; }
+    .nav .nav-link { display: none; }
+  }
+</style>
 </head>
 <body>
 
-<!-- 헤더 -->
-<header class="site-header">
-  <div class="site-header__inner">
-    <div class="site-header__logo">
-      <a href="index.html" class="btn btn--ghost btn--sm" style="margin-right:4px">← 홈</a>
-      <div class="site-header__logo-icon">📖</div>
+<nav class="nav">
+  <div class="nav-left">
+    <a href="index.html" class="back-btn">← 홈</a>
+    <a href="index.html" class="nav-brand">
+      <div class="nav-logo">🎓</div>
       <div>
-        <div class="site-header__title">핵심 가이드</div>
-        <div class="site-header__sub">상담 원리 학습</div>
+        <div class="nav-title-ko">학부모 상담 훈련</div>
+        <div class="nav-title-en">Teacher Consultation Trainer</div>
       </div>
-    </div>
-    <a href="flash.html" class="btn btn--primary btn--sm">🃏 플래시카드 →</a>
+    </a>
   </div>
-</header>
+  <div style="display:flex;gap:8px">
+    <a href="guide.html" class="nav-link active">📖 핵심 가이드</a>
+    <a href="flash.html" class="nav-link">🃏 플래시카드</a>
+  </div>
+</nav>
 
-<!-- 탭 -->
-<div class="guide-tabs">
-  <div class="guide-tabs__inner">
-    <button class="tab-btn active" data-tab="rubric">📐 4대 핵심 원칙</button>
+<section class="hero">
+  <div class="hero-badge">📐 상담 원리 학습</div>
+  <h1>핵심 <span>가이드</span></h1>
+  <p class="hero-sub">4대 원칙부터 유형별 전략, 핵심 표현, 악성 민원 대응까지<br>실전에서 바로 쓸 수 있는 상담 원리를 정리했습니다</p>
+</section>
+
+<div class="tab-nav-wrap">
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="principles">📐 4대 핵심 원칙</button>
     <button class="tab-btn" data-tab="strategy">🗺 유형별 전략</button>
-    <button class="tab-btn" data-tab="phrases">💬 핵심 표현</button>
-    <button class="tab-btn" data-tab="crisis">⚠️ 악성 민원 대응</button>
+    <button class="tab-btn" data-tab="expressions">💬 핵심 표현</button>
+    <button class="tab-btn" data-tab="evil">⚠️ 악성 민원 대응</button>
   </div>
 </div>
 
-<!-- 본문 -->
-<div class="guide-body">
+<main class="main">
 
-  <!-- ══ 탭 1: 4대 핵심 원칙 ══════════════════════════ -->
-  <div class="tab-panel active" id="tab-rubric">
-
-    <div class="intro-box">
-      학부모 상담은 네 가지 요소로 평가됩니다. 각 항목이 <b>왜 중요한지</b> 이해하고, 좋은 예·나쁜 예를 통해 패턴을 익히세요. 이 네 가지가 자연스럽게 나오면 상담의 절반은 성공입니다.
+  <!-- ① 4대 핵심 원칙 -->
+  <section class="section active" id="tab-principles">
+    <div class="section-intro">
+      학부모 상담은 네 가지 요소로 평가됩니다. 각 항목이 <strong>왜 중요한지</strong> 이해하고, 좋은 예·나쁜 예를 통해 패턴을 익히세요. 이 네 가지가 자연스럽게 나오면 상담의 절반은 성공입니다.
     </div>
 
-    <div class="section-head">핵심 평가 항목</div>
-    <div class="rubric-grid">
-
+    <div class="principle-grid">
       <!-- 공감 -->
-      <div class="rubric-card">
-        <div class="rubric-card__head">
-          <span class="rubric-card__icon">💛</span>
-          <span class="rubric-card__label" style="color:#fbbf24">공감 표현</span>
-          <span class="rubric-card__pts" style="background:rgba(245,158,11,.12);color:#fbbf24">최대 30점</span>
+      <div class="principle-card c1">
+        <div class="principle-header">
+          <div class="principle-icon c1">💛</div>
+          <span class="principle-name">공감 표현</span>
+          <span class="principle-score">최대 30점</span>
         </div>
-        <div class="rubric-card__body">
-          <div class="rubric-card__principle">"학부모의 감정을 먼저 인정해야 대화가 열립니다."</div>
-          <div class="eg-label eg-good">✅ 좋은 예</div>
-          <div class="eg-box eg-box--good">"많이 놀라셨겠어요. 그 마음 충분히 이해합니다. 얼마나 속상하셨을지 저도 마음이 아픕니다."</div>
-          <div class="eg-label eg-bad">❌ 피해야 할 예</div>
-          <div class="eg-box eg-box--bad">"규정상 어쩔 수 없습니다." / (감정 무시하고 바로 설명으로 시작)</div>
-          <div class="rubric-card__words">
-            <span class="word-chip">많이</span><span class="word-chip">충분히</span><span class="word-chip">이해합니다</span><span class="word-chip">걱정</span><span class="word-chip">놀라셨겠</span><span class="word-chip">속상</span><span class="word-chip">안타깝</span><span class="word-chip">힘드셨겠</span><span class="word-chip">당황하셨겠</span><span class="word-chip">죄송</span>
-          </div>
+        <div class="principle-quote">"학부모의 감정을 먼저 인정해야 대화가 열립니다."</div>
+        <div class="eg-row">
+          <span class="eg-label good">✅ 좋은 예</span>
+          <span class="eg-text">"많이 놀라셨겠어요. 그 마음 충분히 이해합니다. 얼마나 속상하셨을지 저도 마음이 아픕니다."</span>
+        </div>
+        <div class="eg-row">
+          <span class="eg-label bad">❌ 피해야 할 예</span>
+          <span class="eg-text">"규정상 어쩔 수 없습니다." / 감정을 무시하고 바로 설명으로 시작</span>
         </div>
       </div>
-
       <!-- 해결 방향 -->
-      <div class="rubric-card">
-        <div class="rubric-card__head">
-          <span class="rubric-card__icon">🔧</span>
-          <span class="rubric-card__label" style="color:#60a5fa">해결 방향</span>
-          <span class="rubric-card__pts" style="background:rgba(59,130,246,.12);color:#60a5fa">최대 25점</span>
+      <div class="principle-card c2">
+        <div class="principle-header">
+          <div class="principle-icon c2">🔧</div>
+          <span class="principle-name">해결 방향</span>
+          <span class="principle-score">최대 25점</span>
         </div>
-        <div class="rubric-card__body">
-          <div class="rubric-card__principle">"교사가 무엇을 할지 보여줘야 신뢰가 생깁니다."</div>
-          <div class="eg-label eg-good">✅ 좋은 예</div>
-          <div class="eg-box eg-box--good">"확인해보겠습니다. 함께 방법을 찾아보겠습니다. 이야기 나눠보겠습니다."</div>
-          <div class="eg-label eg-bad">❌ 피해야 할 예</div>
-          <div class="eg-box eg-box--bad">"그건 제 담당이 아닙니다." / "어떻게 해드릴 수가 없어요."</div>
-          <div class="rubric-card__words">
-            <span class="word-chip">확인</span><span class="word-chip">살펴보</span><span class="word-chip">이야기 나누</span><span class="word-chip">방법을</span><span class="word-chip">조치</span><span class="word-chip">지도하겠</span><span class="word-chip">함께</span><span class="word-chip">챙기겠</span><span class="word-chip">노력</span>
-          </div>
+        <div class="principle-quote">"교사가 무엇을 할지 보여줘야 신뢰가 생깁니다."</div>
+        <div class="eg-row">
+          <span class="eg-label good">✅ 좋은 예</span>
+          <span class="eg-text">"확인해보겠습니다. 함께 방법을 찾아보겠습니다. 이야기 나눠보겠습니다."</span>
+        </div>
+        <div class="eg-row">
+          <span class="eg-label bad">❌ 피해야 할 예</span>
+          <span class="eg-text">"그건 제 담당이 아닙니다." / "어떻게 해드릴 수가 없어요."</span>
         </div>
       </div>
-
       <!-- 사실 기반 -->
-      <div class="rubric-card">
-        <div class="rubric-card__head">
-          <span class="rubric-card__icon">📋</span>
-          <span class="rubric-card__label" style="color:#4ade80">사실 기반</span>
-          <span class="rubric-card__pts" style="background:rgba(34,197,94,.12);color:#4ade80">최대 20점</span>
+      <div class="principle-card c3">
+        <div class="principle-header">
+          <div class="principle-icon c3">📋</div>
+          <span class="principle-name">사실 기반</span>
+          <span class="principle-score">최대 20점</span>
         </div>
-        <div class="rubric-card__body">
-          <div class="rubric-card__principle">"상황을 객관적으로 설명해야 오해가 줄어듭니다."</div>
-          <div class="eg-label eg-good">✅ 좋은 예</div>
-          <div class="eg-box eg-box--good">"당시 상황은 이랬습니다. 제가 직접 확인했을 때 양호실에서 처치 후 정상 수업에 참여했습니다."</div>
-          <div class="eg-label eg-bad">❌ 피해야 할 예</div>
-          <div class="eg-box eg-box--bad">"잘 모르겠어요." / "그런 사실이 없는데요." (확인 없이 부정)</div>
-          <div class="rubric-card__words">
-            <span class="word-chip">직접</span><span class="word-chip">확인했</span><span class="word-chip">상황을</span><span class="word-chip">당시</span><span class="word-chip">기록</span><span class="word-chip">양호실</span><span class="word-chip">처치</span>
-          </div>
+        <div class="principle-quote">"상황을 객관적으로 설명해야 오해가 줄어듭니다."</div>
+        <div class="eg-row">
+          <span class="eg-label good">✅ 좋은 예</span>
+          <span class="eg-text">"당시 상황은 이랬습니다. 제가 직접 확인했을 때 양호실에서 처치 후 정상 수업에 참여했습니다."</span>
+        </div>
+        <div class="eg-row">
+          <span class="eg-label bad">❌ 피해야 할 예</span>
+          <span class="eg-text">"잘 모르겠어요." / "그런 사실이 없는데요." (확인 없이 부정)</span>
         </div>
       </div>
-
       <!-- 후속 약속 -->
-      <div class="rubric-card">
-        <div class="rubric-card__head">
-          <span class="rubric-card__icon">📅</span>
-          <span class="rubric-card__label" style="color:#c4b5fd">후속 약속</span>
-          <span class="rubric-card__pts" style="background:rgba(139,92,246,.12);color:#c4b5fd">최대 15점</span>
+      <div class="principle-card c4">
+        <div class="principle-header">
+          <div class="principle-icon c4">📅</div>
+          <span class="principle-name">후속 약속</span>
+          <span class="principle-score">최대 15점</span>
         </div>
-        <div class="rubric-card__body">
-          <div class="rubric-card__principle">"언제, 어떻게 연락할지 약속하면 학부모의 불안이 줄어듭니다."</div>
-          <div class="eg-label eg-good">✅ 좋은 예</div>
-          <div class="eg-box eg-box--good">"오늘 방과 후까지 문자로 알려드리겠습니다. 금요일까지 결과를 꼭 연락드리겠습니다."</div>
-          <div class="eg-label eg-bad">❌ 피해야 할 예</div>
-          <div class="eg-box eg-box--bad">"나중에 연락드릴게요." (구체적 시점 없이 모호한 약속)</div>
-          <div class="rubric-card__words">
-            <span class="word-chip">연락드리겠</span><span class="word-chip">알려드리겠</span><span class="word-chip">문자</span><span class="word-chip">내일</span><span class="word-chip">금요일</span><span class="word-chip">이번 주</span><span class="word-chip">바로</span>
-          </div>
+        <div class="principle-quote">"언제, 어떻게 연락할지 약속하면 학부모의 불안이 줄어듭니다."</div>
+        <div class="eg-row">
+          <span class="eg-label good">✅ 좋은 예</span>
+          <span class="eg-text">"오늘 방과 후까지 문자로 알려드리겠습니다. 금요일까지 결과를 꼭 연락드리겠습니다."</span>
+        </div>
+        <div class="eg-row">
+          <span class="eg-label bad">❌ 피해야 할 예</span>
+          <span class="eg-text">"나중에 연락드릴게요." (구체적 시점 없이 모호한 약속)</span>
         </div>
       </div>
     </div>
 
-    <div class="section-head" style="margin-top:28px">반드시 피해야 할 방어적 표현 (감점)</div>
-    <div class="penalty-card">
-      <div class="penalty-card__head">
-        <span style="font-size:22px">⚠️</span>
-        <span style="font-size:14px;font-weight:800;color:#f87171">방어적 표현</span>
-        <span style="margin-left:auto;font-size:12px;font-weight:700;color:#f87171;background:rgba(239,68,68,.12);padding:3px 10px;border-radius:8px">발화당 -15점</span>
-      </div>
-      <div style="font-size:12px;color:var(--txt3);margin-bottom:10px;line-height:1.6">
-        아래 표현이 포함되면 채점에서 감점됩니다. 방어적 표현은 학부모의 감정을 악화시키고 대화를 막힘니다.
-      </div>
-      <div class="penalty-card__words">
+    <!-- 감점 표현 -->
+    <div class="penalty-box">
+      <div class="penalty-header">⚠️ 반드시 피해야 할 방어적 표현 <span style="font-size:12px;color:var(--red);font-weight:600;margin-left:4px">(발화당 −15점)</span></div>
+      <div class="penalty-chips">
         <span class="penalty-chip">규정상</span>
         <span class="penalty-chip">원래 그런</span>
         <span class="penalty-chip">어쩔 수 없</span>
@@ -401,327 +560,297 @@
         <span class="penalty-chip">당연히</span>
       </div>
     </div>
-  </div><!-- /tab-rubric -->
 
-
-  <!-- ══ 탭 2: 유형별 전략 ════════════════════════════ -->
-  <div class="tab-panel" id="tab-strategy">
-
-    <div class="intro-box">
-      유형마다 대화의 깊이와 접근 방식이 다릅니다. 일반 상황은 빠른 해결, 민감 상황은 충분한 경청, 고난도는 공식 절차와 투명한 대응이 핵심입니다.
-    </div>
-
-    <!-- 일반 -->
-    <div class="strategy-card" style="background:rgba(34,197,94,.05);border-color:rgba(34,197,94,.25)">
-      <div class="strategy-card__top">
-        <span style="font-size:20px">🟢</span>
-        <span class="strategy-card__badge" style="background:rgba(34,197,94,.12);color:#4ade80">일반 상황</span>
-        <span class="strategy-card__turns" style="background:rgba(34,197,94,.1);color:#4ade80">6턴</span>
-        <span style="font-size:12px;color:var(--txt3);margin-left:4px">규정·절차·소지품 관련</span>
+    <!-- 모든 유형 공통 원칙 -->
+    <h2 style="font-family:'Noto Serif KR',serif;font-size:17px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+      <span style="display:inline-block;width:4px;height:18px;background:var(--amber);border-radius:2px"></span>
+      모든 유형 공통 원칙
+    </h2>
+    <div class="common-grid">
+      <div class="common-card">
+        <div class="common-card-icon">🎯</div>
+        <div class="common-card-text">의도가 좋아도 결과가 상처였다면, 결과에 대한 책임을 인정하세요.</div>
       </div>
-      <div class="flow-steps">
-        <div class="flow-step" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#4ade80">① 공감</div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#4ade80">② 사실 설명</div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#4ade80">③ 사과(필요시)</div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#4ade80">④ 구체적 약속</div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#4ade80">⑤ 마무리</div>
+      <div class="common-card">
+        <div class="common-card-icon">👂</div>
+        <div class="common-card-text">학부모가 말을 마치기 전에 해결책을 제시하지 마세요. 먼저 다 들으세요.</div>
       </div>
-      <div class="strategy-card__desc">
-        빠른 해결이 목표입니다. 학부모가 원하는 것이 명확하고 교사가 처리 가능한 경우가 많으므로, 공감 후 사실을 명확히 설명하고 즉시 해결 방향을 제시하세요. 지나치게 긴 설명보다 <b>간결하고 실질적인 약속</b>이 효과적입니다.
+      <div class="common-card">
+        <div class="common-card-icon">📆</div>
+        <div class="common-card-text">모호한 약속은 불신을 키웁니다. "나중에"보다 "목요일 4시"가 낫습니다.</div>
       </div>
-      <div class="strategy-card__warn">
-        💡 <b>주의:</b> 규정을 먼저 내세우면 역효과입니다. "규정상 어쩔 수 없습니다" 대신 "이렇게 하겠습니다"로 전환하세요.
+      <div class="common-card">
+        <div class="common-card-icon">🤝</div>
+        <div class="common-card-text">공식 절차(교장·교육청)는 막을 수 없고 막아서도 안 됩니다. 안내하세요.</div>
       </div>
     </div>
+  </section>
 
-    <!-- 민감 -->
-    <div class="strategy-card" style="background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.25)">
-      <div class="strategy-card__top">
-        <span style="font-size:20px">🟡</span>
-        <span class="strategy-card__badge" style="background:rgba(245,158,11,.12);color:#fbbf24">민감 상황</span>
-        <span class="strategy-card__turns" style="background:rgba(245,158,11,.1);color:#fbbf24">9턴</span>
-        <span style="font-size:12px;color:var(--txt3);margin-left:4px">교우 관계·안전사고·정서</span>
+  <!-- ② 유형별 전략 -->
+  <section class="section" id="tab-strategy">
+    <div class="section-intro">
+      유형마다 대화의 깊이와 접근 방식이 다릅니다. <strong>일반 상황은 빠른 해결</strong>, <strong>민감 상황은 충분한 경청</strong>, <strong>고난도는 공식 절차와 투명한 대응</strong>이 핵심입니다.
+    </div>
+    <div class="strategy-list">
+      <!-- 일반 -->
+      <div class="strategy-card green">
+        <div class="strategy-header">
+          <span class="strategy-badge green">🟢 일반 상황</span>
+          <span class="strategy-title">규정·절차·소지품 관련</span>
+          <span class="strategy-turns">6턴</span>
+        </div>
+        <div class="flow-steps">
+          <span class="flow-step">① 공감</span><span class="flow-arrow">→</span>
+          <span class="flow-step">② 사실 설명</span><span class="flow-arrow">→</span>
+          <span class="flow-step">③ 사과(필요시)</span><span class="flow-arrow">→</span>
+          <span class="flow-step">④ 구체적 약속</span><span class="flow-arrow">→</span>
+          <span class="flow-step">⑤ 마무리</span>
+        </div>
+        <div class="strategy-body">빠른 해결이 목표입니다. 학부모가 원하는 것이 명확하고 교사가 처리 가능한 경우가 많으므로, 공감 후 사실을 명확히 설명하고 즉시 해결 방향을 제시하세요. 지나치게 긴 설명보다 <strong>간결하고 실질적인 약속</strong>이 효과적입니다.</div>
+        <div class="strategy-tip">💡 <strong>주의:</strong> 규정을 먼저 내세우면 역효과입니다. "규정상 어쩔 수 없습니다" 대신 "이렇게 하겠습니다"로 전환하세요.</div>
       </div>
-      <div class="flow-steps">
-        <div class="flow-step" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#fbbf24">① 충분한 공감</div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#fbbf24">② 경청·질문</div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#fbbf24">③ 사실 확인 약속</div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#fbbf24">④ 협력적 해결</div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#fbbf24">⑤ 구체적 날짜 약속</div>
+      <!-- 민감 -->
+      <div class="strategy-card yellow">
+        <div class="strategy-header">
+          <span class="strategy-badge yellow">🟡 민감 상황</span>
+          <span class="strategy-title">교우 관계·안전사고·정서</span>
+          <span class="strategy-turns">9턴</span>
+        </div>
+        <div class="flow-steps">
+          <span class="flow-step">① 충분한 공감</span><span class="flow-arrow">→</span>
+          <span class="flow-step">② 경청·질문</span><span class="flow-arrow">→</span>
+          <span class="flow-step">③ 사실 확인 약속</span><span class="flow-arrow">→</span>
+          <span class="flow-step">④ 협력적 해결</span><span class="flow-arrow">→</span>
+          <span class="flow-step">⑤ 구체적 날짜 약속</span>
+        </div>
+        <div class="strategy-body">감정이 깊이 얽혀 있으므로 경청이 핵심입니다. 해결책을 급히 제시하기보다 <strong>"충분히 들었다"는 느낌을 먼저 줘야</strong> 합니다. 할 수 없는 것은 솔직히 설명하고, 할 수 있는 것을 구체적으로 약속하세요. 정기 소통 계획을 제시하면 효과적입니다.</div>
+        <div class="strategy-tip">💡 <strong>주의:</strong> "저도 몰랐어요"보다 "더 빨리 알아차렸어야 했는데 죄송합니다"가 훨씬 신뢰를 만듭니다.</div>
       </div>
-      <div class="strategy-card__desc">
-        감정이 깊이 얽혀 있으므로 경청이 핵심입니다. 해결책을 급히 제시하기보다 <b>"충분히 들었다"는 느낌을 먼저 줘야</b> 합니다. 할 수 없는 것은 솔직히 설명하고, 할 수 있는 것을 구체적으로 약속하세요. 정기 소통 계획을 제시하면 효과적입니다.
-      </div>
-      <div class="strategy-card__warn">
-        💡 <b>주의:</b> "저도 몰랐어요"보다 "더 빨리 알아차렸어야 했는데 죄송합니다"가 훨씬 신뢰를 만듭니다.
+      <!-- 고난도 -->
+      <div class="strategy-card red">
+        <div class="strategy-header">
+          <span class="strategy-badge red">🔴 고난도 민원</span>
+          <span class="strategy-title">교사 태도·집단 민원·학교폭력</span>
+          <span class="strategy-turns">12턴</span>
+        </div>
+        <div class="flow-steps">
+          <span class="flow-step">① 감정 수용</span><span class="flow-arrow">→</span>
+          <span class="flow-step">② 방어 없이 경청</span><span class="flow-arrow">→</span>
+          <span class="flow-step">③ 공식 절차 안내</span><span class="flow-arrow">→</span>
+          <span class="flow-step">④ 투명한 보고</span><span class="flow-arrow">→</span>
+          <span class="flow-step">⑤ 매일 소통</span>
+        </div>
+        <div class="strategy-body">교육청 신고, 담임 교체 요구 등 압박이 큰 상황입니다. <strong>공식 절차를 막으려 하지 말고 오히려 먼저 안내하세요.</strong> 교장에게 직접 보고하겠다는 투명한 자세가 역설적으로 신뢰를 만듭니다. 감정이 격할수록 느리고 차분하게 말하세요.</div>
+        <div class="strategy-tip">💡 <strong>핵심 원칙:</strong> "방어 없이 듣기 → 공식 절차 안내 → 투명하게 보고" — 숨기려 할수록 갈등이 커집니다.</div>
       </div>
     </div>
+  </section>
 
-    <!-- 고난도 -->
-    <div class="strategy-card" style="background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.25)">
-      <div class="strategy-card__top">
-        <span style="font-size:20px">🔴</span>
-        <span class="strategy-card__badge" style="background:rgba(239,68,68,.12);color:#f87171">고난도 민원</span>
-        <span class="strategy-card__turns" style="background:rgba(239,68,68,.1);color:#f87171">12턴</span>
-        <span style="font-size:12px;color:var(--txt3);margin-left:4px">교사 태도·집단 민원·학교폭력</span>
-      </div>
-      <div class="flow-steps" style="flex-wrap:wrap">
-        <div class="flow-step" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#f87171">① 감정 수용</div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#f87171">② 방어 없이 경청</div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#f87171">③ 공식 절차 안내</div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#f87171">④ 투명한 보고</div>
-        <span class="flow-arrow">→</span>
-        <div class="flow-step" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#f87171">⑤ 매일 소통</div>
-      </div>
-      <div class="strategy-card__desc">
-        교육청 신고, 담임 교체 요구 등 압박이 큰 상황입니다. <b>공식 절차를 막으려 하지 말고 오히려 먼저 안내하세요.</b> 교장에게 직접 보고하겠다는 투명한 자세가 역설적으로 신뢰를 만듭니다. 감정이 격할수록 느리고 차분하게 말하세요.
-      </div>
-      <div class="strategy-card__warn">
-        💡 <b>핵심 원칙:</b> "방어 없이 듣기 → 공식 절차 안내 → 투명하게 보고" — 숨기려 할수록 갈등이 커집니다.
-      </div>
+  <!-- ③ 핵심 표현 -->
+  <section class="section" id="tab-expressions">
+    <div class="section-intro">
+      카드를 클릭하면 <strong>클립보드에 복사</strong>됩니다. 자주 보면서 이 표현들이 자연스럽게 나올 때까지 연습하세요.
     </div>
 
-    <!-- 공통 원칙 -->
-    <div class="section-head" style="margin-top:28px">모든 유형 공통 원칙</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px">
-      <div class="principle-row"><span class="principle-row__bullet">🎯</span><div>의도가 좋아도 결과가 상처였다면, 결과에 대한 책임을 인정하세요.</div></div>
-      <div class="principle-row"><span class="principle-row__bullet">👂</span><div>학부모가 말을 마치기 전에 해결책을 제시하지 마세요. 먼저 다 들으세요.</div></div>
-      <div class="principle-row"><span class="principle-row__bullet">📆</span><div>모호한 약속은 불신을 키웁니다. "나중에"보다 "목요일 4시"가 낫습니다.</div></div>
-      <div class="principle-row"><span class="principle-row__bullet">🤝</span><div>공식 절차(교장·교육청)는 막을 수 없고 막아서도 안 됩니다. 안내하세요.</div></div>
-    </div>
-  </div><!-- /tab-strategy -->
-
-
-  <!-- ══ 탭 3: 핵심 표현 ══════════════════════════════ -->
-  <div class="tab-panel" id="tab-phrases">
-
-    <div class="intro-box">
-      카드를 클릭하면 <b>클립보드에 복사</b>됩니다. 자주 보면서 이 표현들이 자연스럽게 나올 때까지 연습하세요.
-    </div>
-
-    <div class="phrase-section">
-      <div class="phrase-section__title">
-        <span style="font-size:18px">💛</span> 공감 표현
-      </div>
-      <div class="phrase-grid">
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>많이 놀라셨겠어요.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>충분히 이해합니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>그 마음 충분히 이해합니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>얼마나 속상하셨을까요.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>많이 걱정되셨겠어요.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>힘드셨겠어요.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>당황하셨겠어요.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>안타깝게 생각합니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>정말 죄송합니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>그 말씀이 맞습니다.</div>
+    <div class="expr-section">
+      <div class="expr-title">💛 공감 표현</div>
+      <div class="expr-chips">
+        <span class="expr-chip" data-text="많이 놀라셨겠어요.">많이 놀라셨겠어요.</span>
+        <span class="expr-chip" data-text="충분히 이해합니다.">충분히 이해합니다.</span>
+        <span class="expr-chip" data-text="그 마음 충분히 이해합니다.">그 마음 충분히 이해합니다.</span>
+        <span class="expr-chip" data-text="얼마나 속상하셨을까요.">얼마나 속상하셨을까요.</span>
+        <span class="expr-chip" data-text="많이 걱정되셨겠어요.">많이 걱정되셨겠어요.</span>
+        <span class="expr-chip" data-text="힘드셨겠어요.">힘드셨겠어요.</span>
+        <span class="expr-chip" data-text="당황하셨겠어요.">당황하셨겠어요.</span>
+        <span class="expr-chip" data-text="안타깝게 생각합니다.">안타깝게 생각합니다.</span>
+        <span class="expr-chip" data-text="정말 죄송합니다.">정말 죄송합니다.</span>
+        <span class="expr-chip" data-text="그 말씀이 맞습니다.">그 말씀이 맞습니다.</span>
       </div>
     </div>
 
-    <div class="phrase-section">
-      <div class="phrase-section__title">
-        <span style="font-size:18px">🔧</span> 해결 방향 표현
-      </div>
-      <div class="phrase-grid">
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>확인해보겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>살펴보겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>함께 방법을 찾겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>이야기 나눠보겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>조치하겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>지도하겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>세심하게 챙기겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>파악해보겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>노력하겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>점검하겠습니다.</div>
+    <div class="expr-section">
+      <div class="expr-title">🔧 해결 방향 표현</div>
+      <div class="expr-chips">
+        <span class="expr-chip" data-text="확인해보겠습니다.">확인해보겠습니다.</span>
+        <span class="expr-chip" data-text="살펴보겠습니다.">살펴보겠습니다.</span>
+        <span class="expr-chip" data-text="함께 방법을 찾겠습니다.">함께 방법을 찾겠습니다.</span>
+        <span class="expr-chip" data-text="이야기 나눠보겠습니다.">이야기 나눠보겠습니다.</span>
+        <span class="expr-chip" data-text="조치하겠습니다.">조치하겠습니다.</span>
+        <span class="expr-chip" data-text="지도하겠습니다.">지도하겠습니다.</span>
+        <span class="expr-chip" data-text="세심하게 챙기겠습니다.">세심하게 챙기겠습니다.</span>
+        <span class="expr-chip" data-text="파악해보겠습니다.">파악해보겠습니다.</span>
+        <span class="expr-chip" data-text="노력하겠습니다.">노력하겠습니다.</span>
+        <span class="expr-chip" data-text="점검하겠습니다.">점검하겠습니다.</span>
       </div>
     </div>
 
-    <div class="phrase-section">
-      <div class="phrase-section__title">
-        <span style="font-size:18px">📋</span> 사실 기반 표현
-      </div>
-      <div class="phrase-grid">
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>당시 상황은 이랬습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>제가 직접 확인했을 때...</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>양호실에서 처치 후...</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>기록에 따르면...</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>목격한 바로는...</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>제가 보기에는...</div>
+    <div class="expr-section">
+      <div class="expr-title">📋 사실 기반 표현</div>
+      <div class="expr-chips">
+        <span class="expr-chip" data-text="당시 상황은 이랬습니다.">당시 상황은 이랬습니다.</span>
+        <span class="expr-chip" data-text="제가 직접 확인했을 때...">제가 직접 확인했을 때...</span>
+        <span class="expr-chip" data-text="양호실에서 처치 후...">양호실에서 처치 후...</span>
+        <span class="expr-chip" data-text="기록에 따르면...">기록에 따르면...</span>
+        <span class="expr-chip" data-text="목격한 바로는...">목격한 바로는...</span>
+        <span class="expr-chip" data-text="제가 보기에는...">제가 보기에는...</span>
       </div>
     </div>
 
-    <div class="phrase-section">
-      <div class="phrase-section__title">
-        <span style="font-size:18px">📅</span> 후속 약속 표현
-      </div>
-      <div class="phrase-grid">
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>오늘 방과 후에 문자드리겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>금요일까지 알려드리겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>확인 후 다시 연락드리겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>내일까지 연락드리겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>이번 주 안에 알려드리겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>바로 확인하겠습니다.</div>
+    <div class="expr-section">
+      <div class="expr-title">📅 후속 약속 표현</div>
+      <div class="expr-chips">
+        <span class="expr-chip" data-text="오늘 방과 후에 문자드리겠습니다.">오늘 방과 후에 문자드리겠습니다.</span>
+        <span class="expr-chip" data-text="금요일까지 알려드리겠습니다.">금요일까지 알려드리겠습니다.</span>
+        <span class="expr-chip" data-text="확인 후 다시 연락드리겠습니다.">확인 후 다시 연락드리겠습니다.</span>
+        <span class="expr-chip" data-text="내일까지 연락드리겠습니다.">내일까지 연락드리겠습니다.</span>
+        <span class="expr-chip" data-text="이번 주 안에 알려드리겠습니다.">이번 주 안에 알려드리겠습니다.</span>
+        <span class="expr-chip" data-text="바로 확인하겠습니다.">바로 확인하겠습니다.</span>
       </div>
     </div>
 
-    <div class="phrase-section">
-      <div class="phrase-section__title">
-        <span style="font-size:18px">🤝</span> 마무리 표현
-      </div>
-      <div class="phrase-grid">
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>연락 주셔서 감사합니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>말씀해 주셔서 감사합니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>언제든지 연락 주세요.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>함께 해결해 나가겠습니다.</div>
-        <div class="phrase-card" onclick="copyPhrase(this)"><span class="phrase-card__copy">복사</span>가정과 학교가 함께 노력하면 분명 좋아질 것입니다.</div>
+    <div class="expr-section">
+      <div class="expr-title">🤝 마무리 표현</div>
+      <div class="expr-chips">
+        <span class="expr-chip" data-text="연락 주셔서 감사합니다.">연락 주셔서 감사합니다.</span>
+        <span class="expr-chip" data-text="말씀해 주셔서 감사합니다.">말씀해 주셔서 감사합니다.</span>
+        <span class="expr-chip" data-text="언제든지 연락 주세요.">언제든지 연락 주세요.</span>
+        <span class="expr-chip" data-text="함께 해결해 나가겠습니다.">함께 해결해 나가겠습니다.</span>
+        <span class="expr-chip" data-text="가정과 학교가 함께 노력하면 분명 좋아질 것입니다.">가정과 학교가 함께 노력하면 분명 좋아질 것입니다.</span>
       </div>
     </div>
-  </div><!-- /tab-phrases -->
+  </section>
 
-
-  <!-- ══ 탭 4: 악성 민원 대응 ═════════════════════════ -->
-  <div class="tab-panel" id="tab-crisis">
-
-    <div class="intro-box">
-      감정이 격한 민원은 <b>즉각 해결이 목표가 아닙니다.</b> 대화를 이어갈 수 있는 안전한 조건을 먼저 만드는 것이 핵심입니다. — 회복적 대화 가이드
+  <!-- ④ 악성 민원 대응 -->
+  <section class="section" id="tab-evil">
+    <div class="evil-intro">
+      감정이 격한 민원은 <strong>즉각 해결이 목표가 아닙니다.</strong> 대화를 이어갈 수 있는 안전한 조건을 먼저 만드는 것이 핵심입니다.
+      <blockquote>— 회복적 대화 가이드</blockquote>
     </div>
 
-    <!-- 즉각 대응 유보 -->
-    <div class="section-head">즉각 대응을 유보해야 할 5가지 상황</div>
-    <div class="alert-box">
-      <div class="alert-box__title">⚠️ 이럴 때는 바로 해결하려 하지 마세요</div>
-      <ul>
-        <li>민원인의 발언에 강한 감정과 단정적 주장이 섞여 있을 때</li>
-        <li>교사가 즉시 정확한 사실 확인이나 판단을 할 수 없는 상태일 때</li>
-        <li>곧 수업이 시작되어 충분한 대화 시간이 확보되지 않을 때</li>
-        <li>민원인이 장시간 통화를 이어갈 가능성이 높을 때</li>
-        <li>교원 본인이 감정적으로 흔들리고 있음을 인식했을 때</li>
-      </ul>
+    <h2 style="font-family:'Noto Serif KR',serif;font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+      <span style="display:inline-block;width:4px;height:18px;background:var(--red);border-radius:2px"></span>
+      즉각 대응을 유보해야 할 5가지 상황
+    </h2>
+    <div class="situation-list" style="margin-bottom:28px">
+      <div class="situation-item"><div class="situation-num">1</div><div class="situation-text">민원인의 발언에 강한 감정과 단정적 주장이 섞여 있을 때</div></div>
+      <div class="situation-item"><div class="situation-num">2</div><div class="situation-text">교사가 즉시 정확한 사실 확인이나 판단을 할 수 없는 상태일 때</div></div>
+      <div class="situation-item"><div class="situation-num">3</div><div class="situation-text">곧 수업이 시작되어 충분한 대화 시간이 확보되지 않을 때</div></div>
+      <div class="situation-item"><div class="situation-num">4</div><div class="situation-text">민원인이 장시간 통화를 이어갈 가능성이 높을 때</div></div>
+      <div class="situation-item"><div class="situation-num">5</div><div class="situation-text">교원 본인이 감정적으로 흔들리고 있음을 인식했을 때</div></div>
     </div>
 
-    <!-- 3단계 대응법 -->
-    <div class="section-head">3단계 대응법</div>
-    <div class="step-grid">
-      <div class="step-card">
-        <div class="step-card__num">01</div>
-        <div class="step-card__title">듣기</div>
-        <div class="step-card__desc">조건 없이 들어주기. 상대의 감정을 존중하고 원하는 것을 확인합니다.</div>
-        <div class="step-card__examples">
-          <div class="step-example">"이 일로 많이 당황하셨지요?"</div>
-          <div class="step-example">"지금 원하시는 게 무엇인가요?"</div>
-          <div class="step-example">"그 부분이 많이 궁금하신 상황이신 거죠."</div>
+    <h2 style="font-family:'Noto Serif KR',serif;font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+      <span style="display:inline-block;width:4px;height:18px;background:var(--amber);border-radius:2px"></span>
+      3단계 대응법
+    </h2>
+    <div class="steps3">
+      <div class="step3-card">
+        <div class="step3-num">STEP 01</div>
+        <div class="step3-title">👂 듣기</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5">조건 없이 들어주기. 상대의 감정을 존중하고 원하는 것을 확인합니다.</div>
+        <div class="step3-examples">
+          <div class="step3-eg">"이 일로 많이 당황하셨지요?"</div>
+          <div class="step3-eg">"지금 원하시는 게 무엇인가요?"</div>
+          <div class="step3-eg">"그 부분이 많이 궁금하신 거죠."</div>
         </div>
       </div>
-      <div class="step-card">
-        <div class="step-card__num">02</div>
-        <div class="step-card__title">하기</div>
-        <div class="step-card__desc">해줄 수 있는 일은 곧바로 실행. 아닌 일에는 부드럽게 선을 긋습니다.</div>
-        <div class="step-card__examples">
-          <div class="step-example">"확인 후 다시 연락드리겠습니다."</div>
-          <div class="step-example">"학교에서 반드시 지켜야 하는 매뉴얼이 있습니다."</div>
-          <div class="step-example">"이 부분은 원칙적으로 처리할 수밖에 없습니다."</div>
+      <div class="step3-card">
+        <div class="step3-num">STEP 02</div>
+        <div class="step3-title">✅ 하기</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5">해줄 수 있는 일은 곧바로 실행. 아닌 일에는 부드럽게 선을 긋습니다.</div>
+        <div class="step3-examples">
+          <div class="step3-eg">"확인 후 다시 연락드리겠습니다."</div>
+          <div class="step3-eg">"학교에서 반드시 지켜야 하는 매뉴얼이 있습니다."</div>
+          <div class="step3-eg">"이 부분은 원칙적으로 처리할 수밖에 없습니다."</div>
         </div>
       </div>
-      <div class="step-card">
-        <div class="step-card__num">03</div>
-        <div class="step-card__title">마무리</div>
-        <div class="step-card__desc">교육적 방법을 제안하고 재발 방지 계획과 사과받기로 마무리합니다.</div>
-        <div class="step-card__examples">
-          <div class="step-example">"재발 방지를 위해 꾸준히 지도하겠습니다."</div>
-          <div class="step-example">"가정에서도 협조 부탁드릴게요."</div>
+      <div class="step3-card">
+        <div class="step3-num">STEP 03</div>
+        <div class="step3-title">🎯 마무리</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5">교육적 방법을 제안하고 재발 방지 계획과 사과받기로 마무리합니다.</div>
+        <div class="step3-examples">
+          <div class="step3-eg">"재발 방지를 위해 꾸준히 지도하겠습니다."</div>
+          <div class="step3-eg">"가정에서도 협조 부탁드릴게요."</div>
         </div>
       </div>
     </div>
 
-    <!-- 전화 대응 -->
-    <div class="section-head">전화 민원 대응 원칙</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-bottom:16px">
-      <div class="principle-row"><span class="principle-row__bullet">📞</span><div><b>통화 전 자신 상태 점검.</b> 감정적으로 여유가 없다면 즉시 받지 않고, 여유 있는 시간에 다시 연락합니다.</div></div>
-      <div class="principle-row"><span class="principle-row__bullet">🔇</span><div><b>이 단계에서는 설명·판단을 하지 않습니다.</b> "확인이 필요한 부분입니다"로 충분합니다.</div></div>
-      <div class="principle-row"><span class="principle-row__bullet">⏱</span><div><b>시간이 없으면 솔직히 말하세요.</b> "곧 수업이 있어 지금은 충분히 통화가 어렵습니다."</div></div>
-    </div>
-    <div class="face-to-face-box">
-      <div class="face-to-face-box__label">📋 민감한 사안 대면 전환 예시 문구</div>
-      <div class="face-to-face-box__text">"어머니, 이 사안은 통화보다는 얼굴을 뵙고 차분히 이야기 나누는 것이 좋을 것 같습니다. 제가 말씀을 충분히 잘 듣고 싶은데, 지금은 교육활동 중이라 긴 통화가 어렵습니다. 저는 ○○에는 시간이 되는데, 학교 방문이 가능하신 시간이 언제이신지 여쭤봐도 될까요?"</div>
-    </div>
-
-    <!-- 마법의 키워드 -->
-    <div class="section-head">마법의 키워드 — 바람직한 자화상 프레임</div>
-    <div style="font-size:12px;color:var(--txt3);margin-bottom:12px;line-height:1.6">
-      학부모가 교육에 열정적인 분임을 먼저 인정하면 방어 심리가 낮아집니다. 아래 표현을 상황에 맞게 활용하세요.
-    </div>
-    <div class="keyword-card">
-      <div class="keyword-card__phrase">"어머님은 아이 교육을 위해 특별히 많이 고민하시는 분이시니, 분명 제 말을 이해하실 겁니다."</div>
-    </div>
-    <div class="keyword-card">
-      <div class="keyword-card__phrase">"○○님이 교육에 대해 깊이 고민하시는 분이라는 거 잘 압니다. 그런 분이라면 분명 제 입장도 이해해 주시리라 생각합니다."</div>
-    </div>
-    <div class="keyword-card">
-      <div class="keyword-card__phrase">"어머니처럼 교육적인 분하고 이 문제를 같이 이야기 나누고 싶네요."</div>
-    </div>
-    <div class="keyword-card">
-      <div class="keyword-card__phrase">"어머니는 교육을 많이 고민하시는 분이잖아요. ○○이를 보면 딱 알 수 있거든요."</div>
-    </div>
-
-    <!-- 회복적 대화 원칙 -->
-    <div class="section-head">회복적 대화 원칙</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px">
-      <div class="principle-row"><span class="principle-row__bullet">💙</span><div><b>화가 난 표현 이면을 보세요.</b> 그 안에는 불안, 억울함, 보호받고 싶은 마음이 있습니다.</div></div>
-      <div class="principle-row"><span class="principle-row__bullet">🏳</span><div><b>갈등의 목적은 이기는 것이 아닙니다.</b> 모두가 수용할 수 있는 해결 방향을 함께 찾는 것입니다.</div></div>
-      <div class="principle-row"><span class="principle-row__bullet">✅</span><div><b>실수가 확인되면 인정하세요.</b> 설명으로 덮기보다 사실 인정 + 사과 + 개선 의지가 신뢰를 더 빠르게 회복시킵니다.</div></div>
-      <div class="principle-row"><span class="principle-row__bullet">🏫</span><div><b>개인 대응에서 멈추지 마세요.</b> 민감한 사안은 교장·교감과 공동 대응으로 연결하세요.</div></div>
-    </div>
-
-    <!-- I-Message -->
-    <div class="section-head" style="margin-top:28px">I-Message 전달법</div>
-    <div class="face-to-face-box">
-      <div class="face-to-face-box__label">💬 학부모 비난 대신 교사의 관점으로 전달하기</div>
-      <div class="face-to-face-box__text">
-        "제가 보기에는..." / "이런 부분에서 아이가 어려움을 겪고 있어요."<br><br>
-        학생의 문제 행동을 설명할 때 학부모를 비난하는 대신 교사가 느끼고 관찰한 상황을 차분하게 전달합니다. 상대방이 방어 심리를 갖지 않도록 '나'를 주어로 말하는 방식이 핵심입니다.
+    <div class="phone-box">
+      <div class="phone-box-title">📞 전화 민원 대응 원칙</div>
+      <div class="phone-rules">
+        <div class="phone-rule">
+          <div class="phone-rule-icon">📞</div>
+          <div class="phone-rule-text"><strong>통화 전 자신 상태 점검.</strong> 감정적으로 여유가 없다면 즉시 받지 않고, 여유 있는 시간에 다시 연락합니다.</div>
+        </div>
+        <div class="phone-rule">
+          <div class="phone-rule-icon">🔇</div>
+          <div class="phone-rule-text"><strong>이 단계에서는 설명·판단을 하지 않습니다.</strong> "확인이 필요한 부분입니다"로 충분합니다.</div>
+        </div>
+        <div class="phone-rule">
+          <div class="phone-rule-icon">⏱</div>
+          <div class="phone-rule-text"><strong>시간이 없으면 솔직히 말하세요.</strong> "곧 수업이 있어 지금은 충분히 통화가 어렵습니다."</div>
+        </div>
       </div>
     </div>
 
-  </div><!-- /tab-crisis -->
+    <div class="transition-example">
+      <div class="transition-label">📋 민감한 사안 대면 전환 예시</div>
+      <div class="transition-text">"어머니, 이 사안은 통화보다는 얼굴을 뵙고 차분히 이야기 나누는 것이 좋을 것 같습니다. 제가 말씀을 충분히 잘 듣고 싶은데, 언제 시간이 괜찮으신가요?"</div>
+    </div>
+  </section>
 
-</div><!-- /guide-body -->
+</main>
 
-<!-- 토스트 -->
-<div class="toast" id="toast">클립보드에 복사됐습니다 ✓</div>
+<div class="copy-toast" id="copy-toast">클립보드에 복사됐습니다 ✓</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-logo">🎓</div>
+      <div>
+        <div class="footer-name">학부모 상담 훈련 시뮬레이터</div>
+        <div class="footer-copy">현장 교원을 위한 실전 훈련 서비스</div>
+      </div>
+    </div>
+    <div class="footer-links">
+      <a href="index.html" class="footer-link">🏠 홈</a>
+      <a href="guide.html" class="footer-link">📖 핵심 가이드</a>
+      <a href="flash.html" class="footer-link">🃏 플래시카드</a>
+    </div>
+    <div class="footer-credit">© 2026 <span>최창훈</span> — 만든이</div>
+  </div>
+</footer>
 
 <script>
-/* ── 탭 전환 ── */
+// ── 탭 전환 ──
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-    window.scrollTo({ top: 57, behavior: 'smooth' });
+    window.scrollTo({ top: 120, behavior: 'smooth' });
   });
 });
 
-/* ── 클립보드 복사 ── */
-function copyPhrase(el) {
-  const text = el.childNodes[el.childNodes.length - 1].textContent.trim();
-  navigator.clipboard.writeText(text).then(() => {
-    el.classList.add('copied');
-    setTimeout(() => el.classList.remove('copied'), 1200);
-    const toast = document.getElementById('toast');
+// ── 클립보드 복사 ──
+const toast = document.getElementById('copy-toast');
+let toastTimer;
+document.querySelectorAll('.expr-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const text = chip.dataset.text;
+    navigator.clipboard.writeText(text).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    });
+    chip.classList.add('copied');
+    setTimeout(() => chip.classList.remove('copied'), 1400);
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 1800);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
   });
-}
+});
 </script>
 </body>
 </html>

@@ -20,10 +20,10 @@
     }
     .training-header__info { flex: 1; min-width: 0; }
     .training-header__title {
-      font-size: 17px; font-weight: 800; color: var(--txt);
+      font-size: 17px; font-weight: 800; color: #f1f5f9;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .training-header__meta { font-size: 13px; color: #94a3b8; margin-top: 1px; }
+    .training-header__meta { font-size: 13px; color: #b0bfd0; margin-top: 1px; }
 
     /* ── 고정 정보 바 (배너 + 감정 바 묶음) ──────── */
     .sticky-info-bar {
@@ -39,7 +39,7 @@
     .situation-banner {
       max-width: 720px; margin: 14px auto 0; padding: 12px 16px;
       background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.2);
-      border-radius: var(--radius-sm); font-size: 14px; color: #cbd5e1; line-height: 1.6;
+      border-radius: var(--radius-sm); font-size: 14px; color: #e2e8f0; line-height: 1.6;
     }
     @media (max-width: 760px) { .situation-banner { margin-left: 20px; margin-right: 20px; } }
     .situation-banner__label { color: #a5b4fc; font-weight: 700; margin-right: 4px; }
@@ -51,7 +51,7 @@
     .chat-area { max-width: 720px; margin: 0 auto; padding: 24px 20px 48px; }
 
     /* ── 과거 대화 히스토리 ─────────────────────── */
-    .history-exchange { margin-bottom: 20px; opacity: .65; }
+    .history-exchange { margin-bottom: 20px; opacity: .85; }
     .history-exchange:last-child { margin-bottom: 28px; }
 
     /* ── 학부모 말풍선 ─────────────────────────── */
@@ -64,11 +64,11 @@
     }
     .parent-bubble__body {
       max-width: 80%; padding: 13px 16px;
-      background: var(--bg2); border: 1px solid var(--border);
+      background: #2d3f57; border: 1px solid rgba(99,102,241,.25);
       border-radius: 16px 16px 16px 4px;
-      font-size: 16px; line-height: 1.75; color: #e2e8f0;
+      font-size: 16px; line-height: 1.75; color: #f1f5f9;
     }
-    .parent-bubble__name { font-size: 13px; color: #94a3b8; margin-bottom: 4px; font-weight: 600; }
+    .parent-bubble__name { font-size: 13px; color: #b0bfd0; margin-bottom: 4px; font-weight: 600; }
 
     /* ── 교사 답변 버블 (제출 후) ────────────────── */
     .teacher-bubble {
@@ -97,30 +97,30 @@
     /* ── 입력 영역 ──────────────────────────────── */
     .teacher-input-wrap { margin-bottom: 14px; }
     .teacher-input-label {
-      font-size: 14px; color: #94a3b8; font-weight: 600;
+      font-size: 14px; color: #b0bfd0; font-weight: 600;
       margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
     }
-    .teacher-input-label span { color: #a5b4fc; }
+    .teacher-input-label span { color: #c4b5fd; }
     #teacher-textarea {
       width: 100%; min-height: 110px;
-      background: #243044; border: 1px solid rgba(99,102,241,.4);
+      background: #2a3a52; border: 1px solid rgba(99,102,241,.5);
       border-radius: var(--radius); padding: 14px 16px;
       color: #e2e8f0; font-size: 16px; line-height: 1.7;
       resize: vertical; outline: none; font-family: inherit;
       transition: border-color .2s;
     }
     #teacher-textarea:focus { border-color: rgba(99,102,241,.65); }
-    #teacher-textarea::placeholder { color: #94a3b8; opacity: 1; }
+    #teacher-textarea::placeholder { color: #a8b8cc; opacity: 1; }
     .teacher-input-footer {
       display: flex; justify-content: space-between; align-items: center;
       margin-top: 8px;
     }
-    #char-count { font-size: 14px; color: #94a3b8; }
+    #char-count { font-size: 14px; color: #b0bfd0; }
     .hint-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 10px; }
     .hint-tag {
       font-size: 13px; padding: 3px 10px;
-      background: rgba(99,102,241,.08); border: 1px solid rgba(99,102,241,.2);
-      border-radius: 12px; color: #a5b4fc; cursor: pointer; transition: all .15s;
+      background: rgba(99,102,241,.15); border: 1px solid rgba(99,102,241,.35);
+      border-radius: 12px; color: #c4b5fd; cursor: pointer; transition: all .15s;
     }
     .hint-tag:hover { background: rgba(99,102,241,.18); }
     #submit-btn {
@@ -136,7 +136,7 @@
     /* ── 평가 패널 ──────────────────────────────── */
     .eval-panel {
       display: none; margin-bottom: 12px;
-      background: rgba(30,41,59,.7); border: 1px solid var(--border);
+      background: rgba(36,52,74,.95); border: 1px solid rgba(99,102,241,.25);
       border-radius: var(--radius); overflow: hidden;
     }
     .eval-header {
@@ -150,15 +150,15 @@
     .eval-item:last-child { margin-bottom: 0; }
     .eval-item__header {
       display: flex; justify-content: space-between;
-      font-size: 14px; color: #94a3b8; margin-bottom: 4px;
+      font-size: 14px; color: #b0bfd0; margin-bottom: 4px;
     }
     .eval-item__score { font-weight: 800; font-size: 15px; }
     .eval-bar-track {
-      height: 6px; background: rgba(30,41,59,.9);
+      height: 6px; background: rgba(255,255,255,.08);
       border-radius: 3px; overflow: hidden; margin-bottom: 3px;
     }
     .eval-bar-fill { height: 100%; border-radius: 3px; transition: width .9s ease; }
-    .eval-hits { font-size: 13px; color: #94a3b8; }
+    .eval-hits { font-size: 13px; color: #b0bfd0; }
     .eval-feedback {
       margin-top: 12px; padding: 12px 16px;
       background: rgba(245,158,11,.07); border: 1px solid rgba(245,158,11,.2);
@@ -178,12 +178,12 @@
     }
     .model-panel__label { font-size: 14px; color: #a5b4fc; font-weight: 700; margin-bottom: 10px; }
     .model-panel__text {
-      font-size: 16px; line-height: 1.8; color: var(--txt);
-      padding: 12px 16px; background: rgba(0,0,0,.2);
+      font-size: 16px; line-height: 1.8; color: #f1f5f9;
+      padding: 12px 16px; background: rgba(99,102,241,.12);
       border-radius: var(--radius-sm); border-left: 3px solid var(--indigo);
       margin-bottom: 10px; font-style: italic;
     }
-    .model-panel__tip { font-size: 14px; color: #94a3b8; line-height: 1.5; }
+    .model-panel__tip { font-size: 14px; color: #b0bfd0; line-height: 1.5; }
 
     /* ── 다음 버튼 ──────────────────────────────── */
     .next-btn {
@@ -198,7 +198,7 @@
     /* ── 종료 화면 ──────────────────────────────── */
     .end-screen { display: none; padding-bottom: 48px; }
     .end-score-card {
-      padding: 28px 24px; background: var(--bg2); border: 1px solid var(--border);
+      padding: 28px 24px; background: #1e3050; border: 1px solid rgba(99,102,241,.3);
       border-radius: var(--radius); margin-bottom: 14px; text-align: center;
     }
     .end-emoji   { font-size: 48px; margin-bottom: 6px; display: block; }
@@ -217,7 +217,7 @@
     }
     .end-section__title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
     .end-section ul { padding-left: 20px; }
-    .end-section li { font-size: 15px; color: var(--txt); line-height: 1.7; margin-bottom: 3px; }
+    .end-section li { font-size: 15px; color: #e2e8f0; line-height: 1.7; margin-bottom: 3px; }
     .end-section--strengths    { background: rgba(34,197,94,.06);  border: 1px solid rgba(34,197,94,.2); }
     .end-section--improvements { background: rgba(245,158,11,.06); border: 1px solid rgba(245,158,11,.2); }
     .end-section--next         { background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.2); }
@@ -245,7 +245,7 @@
       <div class="training-header__meta">
         <span id="scenario-category" style="font-weight:700"></span>&nbsp;·&nbsp;
         <span id="difficulty-badge" class="badge"></span>&nbsp;·&nbsp;
-        <span id="turn-count" style="color:#94a3b8">1번째 상황</span>
+        <span id="turn-count" style="color:#b0bfd0">1번째 상황</span>
       </div>
     </div>
     <button id="eval-btn" onclick="requestEval()"
@@ -273,8 +273,8 @@
       <div class="emotion-bar__fill" id="emotion-fill" style="width:70%;background:#f59e0b"></div>
     </div>
     <span class="emotion-bar__text">
-      <span id="emotion-label" style="color:var(--yellow)">다소 불안</span>
-      &nbsp;<span id="emotion-value" style="color:#94a3b8;font-size: 13px">70</span>
+      <span id="emotion-label" style="color:#fbbf24;font-weight:700">다소 불안</span>
+      &nbsp;<span id="emotion-value" style="color:#b0bfd0;font-size: 13px">70</span>
     </span>
   </div>
 </div><!-- /emotion-wrap -->
@@ -311,7 +311,7 @@
   <div class="teacher-input-wrap" id="teacher-input-wrap">
     <div class="teacher-input-label">
       🧑‍🏫 <span>교사로서 직접 답변을 입력하세요</span>
-      <span style="margin-left:auto;font-size: 13px;color:#94a3b8;font-weight:400">Enter 전송 · Shift+Enter 줄바꿈</span>
+      <span style="margin-left:auto;font-size: 13px;color:#b0bfd0;font-weight:400">Enter 전송 · Shift+Enter 줄바꿈</span>
     </div>
 
     <!-- 빠른 입력 힌트 -->
@@ -370,7 +370,7 @@
       <p class="end-summary" id="end-summary"></p>
       <!-- 레이더 차트 -->
       <div id="radar-wrap" style="margin:22px auto 0;max-width:300px;border-top:1px solid var(--border2);padding-top:20px">
-        <div style="font-size: 13px;font-weight:700;color:#94a3b8;letter-spacing:.06em;margin-bottom:10px;text-align:center">📊 항목별 상담 역량</div>
+        <div style="font-size: 13px;font-weight:700;color:#b0bfd0;letter-spacing:.06em;margin-bottom:10px;text-align:center">📊 항목별 상담 역량</div>
         <svg id="radar-svg" viewBox="-145 -145 290 290" style="width:100%;height:auto;display:block;"></svg>
       </div>
       <!-- 턴별 점수 차트 -->
@@ -561,7 +561,7 @@ function updateCharCount() {
   const len = $('teacher-textarea').value.length;
   const el  = $('char-count');
   el.textContent = `${len}자`;
-  el.style.color = len < 10 ? '#94a3b8' : 'var(--green)';
+  el.style.color = len < 10 ? '#b0bfd0' : '#4ade80';
 }
 
 function insertHint(text) {
@@ -884,7 +884,7 @@ function showEndScreen() {
 
         /* ② 학부모 발화 */
         html += '<div style="font-size: 13px;font-weight:700;color:#94a3b8;margin-bottom:4px">👩 학부모</div>';
-        html += '<div style="font-size: 15px;color:#cbd5e1;padding:9px 13px;background:rgba(36,48,68,.9);border-radius:10px 10px 10px 3px;margin-bottom:10px;line-height:1.7">' + escHtml(h.parentMsg) + '</div>';
+        html += '<div style="font-size: 15px;color:#e2e8f0;padding:9px 13px;background:#2d3f57;border-radius:10px 10px 10px 3px;margin-bottom:10px;line-height:1.7">' + escHtml(h.parentMsg) + '</div>';
 
         /* ③ 모범 답변 */
         html += '<div style="font-size: 13px;font-weight:700;color:#c4b5fd;margin-bottom:4px">💬 모범 답변</div>';

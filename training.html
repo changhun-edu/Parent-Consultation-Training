@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>학부모 상담 훈련</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="style.css">
   <style>
     body { background: #0f172a; }
 
@@ -20,10 +20,10 @@
     }
     .training-header__info { flex: 1; min-width: 0; }
     .training-header__title {
-      font-size: 15px; font-weight: 800; color: var(--txt);
+      font-size: 17px; font-weight: 800; color: var(--txt);
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .training-header__meta { font-size: 11px; color: var(--txt3); margin-top: 1px; }
+    .training-header__meta { font-size: 13px; color: var(--txt3); margin-top: 1px; }
 
     /* ── 고정 정보 바 (배너 + 감정 바 묶음) ──────── */
     .sticky-info-bar {
@@ -39,7 +39,7 @@
     .situation-banner {
       max-width: 720px; margin: 14px auto 0; padding: 12px 16px;
       background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.2);
-      border-radius: var(--radius-sm); font-size: 12px; color: var(--txt2); line-height: 1.6;
+      border-radius: var(--radius-sm); font-size: 14px; color: var(--txt2); line-height: 1.6;
     }
     @media (max-width: 760px) { .situation-banner { margin-left: 20px; margin-right: 20px; } }
     .situation-banner__label { color: #a5b4fc; font-weight: 700; margin-right: 4px; }
@@ -60,15 +60,15 @@
       width: 38px; height: 38px; border-radius: 50%;
       background: rgba(239,68,68,.15); border: 2px solid rgba(239,68,68,.3);
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px; flex-shrink: 0;
+      font-size: 20px; flex-shrink: 0;
     }
     .parent-bubble__body {
       max-width: 80%; padding: 13px 16px;
       background: var(--bg2); border: 1px solid var(--border);
       border-radius: 16px 16px 16px 4px;
-      font-size: 14px; line-height: 1.75; color: var(--txt);
+      font-size: 16px; line-height: 1.75; color: var(--txt);
     }
-    .parent-bubble__name { font-size: 11px; color: var(--txt3); margin-bottom: 4px; font-weight: 600; }
+    .parent-bubble__name { font-size: 13px; color: var(--txt3); margin-bottom: 4px; font-weight: 600; }
 
     /* ── 교사 답변 버블 (제출 후) ────────────────── */
     .teacher-bubble {
@@ -80,24 +80,24 @@
       background: linear-gradient(135deg, rgba(59,130,246,.18), rgba(99,102,241,.18));
       border: 1px solid rgba(99,102,241,.35);
       border-radius: 16px 16px 4px 16px;
-      font-size: 14px; line-height: 1.75; color: var(--txt);
+      font-size: 16px; line-height: 1.75; color: var(--txt);
     }
     .teacher-bubble__meta {
-      font-size: 11px; margin-top: 6px;
+      font-size: 13px; margin-top: 6px;
       display: flex; align-items: center; justify-content: flex-end; gap: 8px;
     }
-    .teacher-bubble__score { font-weight: 800; font-size: 13px; }
+    .teacher-bubble__score { font-weight: 800; font-size: 15px; }
     .teacher-avatar {
       width: 38px; height: 38px; border-radius: 50%;
       background: rgba(99,102,241,.18); border: 2px solid rgba(99,102,241,.35);
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px; flex-shrink: 0;
+      font-size: 20px; flex-shrink: 0;
     }
 
     /* ── 입력 영역 ──────────────────────────────── */
     .teacher-input-wrap { margin-bottom: 14px; }
     .teacher-input-label {
-      font-size: 12px; color: var(--txt3); font-weight: 600;
+      font-size: 14px; color: var(--txt3); font-weight: 600;
       margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
     }
     .teacher-input-label span { color: #a5b4fc; }
@@ -105,7 +105,7 @@
       width: 100%; min-height: 110px;
       background: var(--bg2); border: 1px solid rgba(99,102,241,.3);
       border-radius: var(--radius); padding: 14px 16px;
-      color: var(--txt); font-size: 14px; line-height: 1.7;
+      color: var(--txt); font-size: 16px; line-height: 1.7;
       resize: vertical; outline: none; font-family: inherit;
       transition: border-color .2s;
     }
@@ -115,10 +115,10 @@
       display: flex; justify-content: space-between; align-items: center;
       margin-top: 8px;
     }
-    #char-count { font-size: 12px; color: var(--txt3); }
+    #char-count { font-size: 14px; color: var(--txt3); }
     .hint-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 10px; }
     .hint-tag {
-      font-size: 11px; padding: 3px 10px;
+      font-size: 13px; padding: 3px 10px;
       background: rgba(99,102,241,.08); border: 1px solid rgba(99,102,241,.2);
       border-radius: 12px; color: #a5b4fc; cursor: pointer; transition: all .15s;
     }
@@ -127,7 +127,7 @@
       padding: 10px 22px;
       background: linear-gradient(135deg, var(--blue), var(--indigo));
       border: none; border-radius: var(--radius-sm);
-      color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+      color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
       transition: opacity .2s;
     }
     #submit-btn:hover { opacity: .88; }
@@ -143,26 +143,26 @@
       display: flex; align-items: center; gap: 12px;
       padding: 16px 20px; border-bottom: 1px solid var(--border2);
     }
-    .eval-header__score { font-size: 32px; font-weight: 900; line-height: 1; }
-    .eval-header__grade { font-size: 14px; font-weight: 700; }
+    .eval-header__score { font-size: 36px; font-weight: 900; line-height: 1; }
+    .eval-header__grade { font-size: 16px; font-weight: 700; }
     .eval-body { padding: 16px 20px; }
     .eval-item { margin-bottom: 12px; }
     .eval-item:last-child { margin-bottom: 0; }
     .eval-item__header {
       display: flex; justify-content: space-between;
-      font-size: 12px; color: var(--txt2); margin-bottom: 4px;
+      font-size: 14px; color: var(--txt2); margin-bottom: 4px;
     }
-    .eval-item__score { font-weight: 800; font-size: 13px; }
+    .eval-item__score { font-weight: 800; font-size: 15px; }
     .eval-bar-track {
       height: 6px; background: rgba(30,41,59,.9);
       border-radius: 3px; overflow: hidden; margin-bottom: 3px;
     }
     .eval-bar-fill { height: 100%; border-radius: 3px; transition: width .9s ease; }
-    .eval-hits { font-size: 11px; color: var(--txt3); }
+    .eval-hits { font-size: 13px; color: var(--txt3); }
     .eval-feedback {
       margin-top: 12px; padding: 12px 16px;
       background: rgba(245,158,11,.07); border: 1px solid rgba(245,158,11,.2);
-      border-radius: var(--radius-sm); font-size: 13px; color: var(--txt2); line-height: 1.7;
+      border-radius: var(--radius-sm); font-size: 15px; color: var(--txt2); line-height: 1.7;
     }
     .eval-feedback--good {
       background: rgba(34,197,94,.07); border-color: rgba(34,197,94,.2);
@@ -176,14 +176,14 @@
       background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.25);
       border-radius: var(--radius); padding: 18px 20px;
     }
-    .model-panel__label { font-size: 12px; color: #a5b4fc; font-weight: 700; margin-bottom: 10px; }
+    .model-panel__label { font-size: 14px; color: #a5b4fc; font-weight: 700; margin-bottom: 10px; }
     .model-panel__text {
-      font-size: 14px; line-height: 1.8; color: var(--txt);
+      font-size: 16px; line-height: 1.8; color: var(--txt);
       padding: 12px 16px; background: rgba(0,0,0,.2);
       border-radius: var(--radius-sm); border-left: 3px solid var(--indigo);
       margin-bottom: 10px; font-style: italic;
     }
-    .model-panel__tip { font-size: 12px; color: var(--txt3); line-height: 1.5; }
+    .model-panel__tip { font-size: 14px; color: var(--txt3); line-height: 1.5; }
 
     /* ── 다음 버튼 ──────────────────────────────── */
     .next-btn {
@@ -191,7 +191,7 @@
       padding: 13px; margin-bottom: 14px;
       background: linear-gradient(135deg, var(--blue), var(--indigo));
       border: none; border-radius: var(--radius);
-      color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; gap: 8px;
+      color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; gap: 8px;
     }
     .next-btn:hover { opacity: .9; }
 
@@ -202,12 +202,12 @@
       border-radius: var(--radius); margin-bottom: 14px; text-align: center;
     }
     .end-emoji   { font-size: 48px; margin-bottom: 6px; display: block; }
-    .end-score   { font-size: 56px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+    .end-score   { font-size: 62px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
     .end-label-badge {
       display: inline-block; padding: 4px 14px; border-radius: 12px; border: 1px solid;
-      font-size: 13px; font-weight: 700; margin-bottom: 14px;
+      font-size: 15px; font-weight: 700; margin-bottom: 14px;
     }
-    .end-summary { font-size: 14px; color: var(--txt2); line-height: 1.7; }
+    .end-summary { font-size: 16px; color: var(--txt2); line-height: 1.7; }
     .end-turn-chart {
       display: flex; align-items: flex-end; gap: 6px;
       height: 56px; padding: 0 4px; margin-top: 16px;
@@ -215,22 +215,22 @@
     .end-section {
       padding: 14px 18px; border-radius: var(--radius-sm); margin-bottom: 12px;
     }
-    .end-section__title { font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+    .end-section__title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
     .end-section ul { padding-left: 20px; }
-    .end-section li { font-size: 13px; color: var(--txt); line-height: 1.7; margin-bottom: 3px; }
+    .end-section li { font-size: 15px; color: var(--txt); line-height: 1.7; margin-bottom: 3px; }
     .end-section--strengths    { background: rgba(34,197,94,.06);  border: 1px solid rgba(34,197,94,.2); }
     .end-section--improvements { background: rgba(245,158,11,.06); border: 1px solid rgba(245,158,11,.2); }
     .end-section--next         { background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.2); }
     .end-section--strengths    .end-section__title { color: #4ade80; }
     .end-section--improvements .end-section__title { color: #fbbf24; }
     .end-section--next         .end-section__title { color: #a5b4fc; }
-    .end-next-text { font-size: 14px; color: #a5b4fc; font-weight: 600; line-height: 1.6; }
+    .end-next-text { font-size: 16px; color: #a5b4fc; font-weight: 600; line-height: 1.6; }
     .end-btns { display: flex; gap: 10px; }
     .end-btns .btn { flex: 1; justify-content: center; }
 
     @media (max-width: 480px) {
-      .parent-bubble__body, .teacher-bubble__body { max-width: 90%; font-size: 13px; }
-      #teacher-textarea { font-size: 13px; }
+      .parent-bubble__body, .teacher-bubble__body { max-width: 90%; font-size: 15px; }
+      #teacher-textarea { font-size: 15px; }
     }
   </style>
 </head>
@@ -250,7 +250,7 @@
     </div>
     <button id="eval-btn" onclick="requestEval()"
       style="padding:7px 14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);
-             border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;
+             border:none;border-radius:8px;color:#fff;font-size: 14px;font-weight:700;
              cursor:pointer;white-space:nowrap;flex-shrink:0;opacity:.5;pointer-events:none;"
       title="대화를 진행하면 평가받기가 활성화됩니다">
       📊 평가받기
@@ -274,7 +274,7 @@
     </div>
     <span class="emotion-bar__text">
       <span id="emotion-label" style="color:var(--yellow)">다소 불안</span>
-      &nbsp;<span id="emotion-value" style="color:var(--txt3);font-size:11px">70</span>
+      &nbsp;<span id="emotion-value" style="color:var(--txt3);font-size: 13px">70</span>
     </span>
   </div>
 </div><!-- /emotion-wrap -->
@@ -300,7 +300,7 @@
     <div class="teacher-bubble__body">
       <div id="teacher-bubble-text"></div>
       <div class="teacher-bubble__meta">
-        <span style="font-size:11px;color:var(--txt3)">내 답변</span>
+        <span style="font-size: 13px;color:var(--txt3)">내 답변</span>
         <span class="teacher-bubble__score" id="teacher-bubble-score"></span>
       </div>
     </div>
@@ -311,7 +311,7 @@
   <div class="teacher-input-wrap" id="teacher-input-wrap">
     <div class="teacher-input-label">
       🧑‍🏫 <span>교사로서 직접 답변을 입력하세요</span>
-      <span style="margin-left:auto;font-size:11px;color:var(--txt3);font-weight:400">Enter 전송 · Shift+Enter 줄바꿈</span>
+      <span style="margin-left:auto;font-size: 13px;color:var(--txt3);font-weight:400">Enter 전송 · Shift+Enter 줄바꿈</span>
     </div>
 
     <!-- 빠른 입력 힌트 -->
@@ -370,7 +370,7 @@
       <p class="end-summary" id="end-summary"></p>
       <!-- 레이더 차트 -->
       <div id="radar-wrap" style="margin:22px auto 0;max-width:300px;border-top:1px solid var(--border2);padding-top:20px">
-        <div style="font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.06em;margin-bottom:10px;text-align:center">📊 항목별 상담 역량</div>
+        <div style="font-size: 13px;font-weight:700;color:var(--txt3);letter-spacing:.06em;margin-bottom:10px;text-align:center">📊 항목별 상담 역량</div>
         <svg id="radar-svg" viewBox="-145 -145 290 290" style="width:100%;height:auto;display:block;"></svg>
       </div>
       <!-- 턴별 점수 차트 -->
@@ -469,7 +469,7 @@ async function init() {
   if (!id) { location.href = 'index.html'; return; }
 
   try {
-    const data = await fetch('data/scenarios.json').then(r => r.json());
+    const data = await fetch('scenarios.json').then(r => r.json());
     state.scenario = data.scenarios.find(s => s.id === id);
   } catch { showError('데이터를 불러오지 못했습니다.'); return; }
 
@@ -632,21 +632,21 @@ function appendToHistory(parentMsg, teacherInput, score) {
 
   /* 학부모 버블 */
   html += '<div class="parent-bubble">';
-  html += '<div class="parent-avatar" style="width:32px;height:32px;font-size:15px">\uD83D\uDC69</div>';
-  html += '<div class="parent-bubble__body" style="font-size:13px">';
-  html += '<div class="parent-bubble__name" style="font-size:10px">' + escHtml(state.scenario.parentName) + '</div>';
+  html += '<div class="parent-avatar" style="width:32px;height:32px;font-size: 17px">\uD83D\uDC69</div>';
+  html += '<div class="parent-bubble__body" style="font-size: 15px">';
+  html += '<div class="parent-bubble__name" style="font-size: 12px">' + escHtml(state.scenario.parentName) + '</div>';
   html += escHtml(parentMsg);
   html += '</div></div>';
 
   /* 교사 버블 */
   html += '<div class="teacher-bubble" style="display:flex">';
-  html += '<div class="teacher-bubble__body" style="font-size:13px">';
+  html += '<div class="teacher-bubble__body" style="font-size: 15px">';
   html += '<div>' + escHtml(teacherInput) + '</div>';
   html += '<div class="teacher-bubble__meta">';
-  html += '<span style="font-size:10px;color:#8294a7">내 답변</span>';
-  html += '<span style="font-weight:800;font-size:12px;color:' + scCol + '">' + score + '점</span>';
+  html += '<span style="font-size: 12px;color:#8294a7">내 답변</span>';
+  html += '<span style="font-weight:800;font-size: 14px;color:' + scCol + '">' + score + '점</span>';
   html += '</div></div>';
-  html += '<div class="teacher-avatar" style="width:32px;height:32px;font-size:15px">\uD83E\uDDD1\u200D\uD83C\uDFEB</div>';
+  html += '<div class="teacher-avatar" style="width:32px;height:32px;font-size: 17px">\uD83E\uDDD1\u200D\uD83C\uDFEB</div>';
   html += '</div>';
 
   var div = document.createElement('div');
@@ -768,8 +768,8 @@ function drawRadarChart(scores) {
     var anchor = Math.abs(Math.cos(ax.angle)) < 0.15 ? 'middle' : (Math.cos(ax.angle) > 0 ? 'start' : 'end');
     var baselineShift = Math.sin(ax.angle) < -0.5 ? -6 : 4;
 
-    svg += '<text x="' + lx.toFixed(1) + '" y="' + (ly + baselineShift).toFixed(1) + '" text-anchor="' + anchor + '" font-size="11" fill="#94a3b8" font-family="sans-serif">' + ax.label + '</text>';
-    svg += '<text x="' + lx.toFixed(1) + '" y="' + (ly + baselineShift + 13).toFixed(1) + '" text-anchor="' + anchor + '" font-size="11" fill="' + ax.color + '" font-weight="700" font-family="sans-serif">' + v + '%</text>';
+    svg += '<text x="' + lx.toFixed(1) + '" y="' + (ly + baselineShift).toFixed(1) + '" text-anchor="' + anchor + '" font-size="13" fill="#94a3b8" font-family="sans-serif">' + ax.label + '</text>';
+    svg += '<text x="' + lx.toFixed(1) + '" y="' + (ly + baselineShift + 13).toFixed(1) + '" text-anchor="' + anchor + '" font-size="13" fill="' + ax.color + '" font-weight="700" font-family="sans-serif">' + v + '%</text>';
   });
 
   var el = document.getElementById('radar-svg');
@@ -841,16 +841,16 @@ function showEndScreen() {
     const h = Math.max(6, (s / 100) * 48);
     return `
     <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;max-width:52px">
-      <span style="font-size:11px;font-weight:800;color:${c}">${s}</span>
+      <span style="font-size: 13px;font-weight:800;color:${c}">${s}</span>
       <div style="width:100%;height:${h}px;background:${c};border-radius:3px;opacity:.85"></div>
-      <span style="font-size:10px;color:var(--txt3)">${i+1}회</span>
+      <span style="font-size: 12px;color:var(--txt3)">${i+1}회</span>
     </div>`;
   }).join('');
 
   // ── 턴별 상세 리뷰 ──────────────────────────────
   const modelSection = $('end-model-section');
   if (modelSection) {
-    modelSection.innerHTML = '<div style="font-size:12px;font-weight:700;color:#a5b4fc;margin-bottom:16px">💬 대화별 상세 분석</div>' +
+    modelSection.innerHTML = '<div style="font-size: 14px;font-weight:700;color:#a5b4fc;margin-bottom:16px">💬 대화별 상세 분석</div>' +
       state.turnHistory.map(function(h, i) {
         var turn  = state.scenario.turns[i];
         if (!turn) return '';
@@ -878,24 +878,24 @@ function showEndScreen() {
 
         /* ① 헤더 */
         html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
-        html += '<span style="font-size:13px;font-weight:800;color:var(--txt)">' + (i+1) + '번째 대화</span>';
-        html += '<span style="font-size:13px;font-weight:800;color:' + scCol + ';background:' + scCol + '18;border:1px solid ' + scCol + '40;padding:2px 10px;border-radius:10px">' + sc + '점</span>';
+        html += '<span style="font-size: 15px;font-weight:800;color:var(--txt)">' + (i+1) + '번째 대화</span>';
+        html += '<span style="font-size: 15px;font-weight:800;color:' + scCol + ';background:' + scCol + '18;border:1px solid ' + scCol + '40;padding:2px 10px;border-radius:10px">' + sc + '점</span>';
         html += '</div>';
 
         /* ② 학부모 발화 */
-        html += '<div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:4px">👩 학부모</div>';
-        html += '<div style="font-size:13px;color:var(--txt2);padding:9px 13px;background:rgba(30,41,59,.7);border-radius:10px 10px 10px 3px;margin-bottom:10px;line-height:1.7">' + escHtml(h.parentMsg) + '</div>';
+        html += '<div style="font-size: 13px;font-weight:700;color:#94a3b8;margin-bottom:4px">👩 학부모</div>';
+        html += '<div style="font-size: 15px;color:var(--txt2);padding:9px 13px;background:rgba(30,41,59,.7);border-radius:10px 10px 10px 3px;margin-bottom:10px;line-height:1.7">' + escHtml(h.parentMsg) + '</div>';
 
         /* ③ 모범 답변 */
-        html += '<div style="font-size:11px;font-weight:700;color:#c4b5fd;margin-bottom:4px">💬 모범 답변</div>';
-        html += '<div style="font-size:13px;color:#e2e8f0;padding:9px 13px;background:rgba(99,102,241,.1);border-left:3px solid #6366f1;border-radius:0 10px 10px 0;margin-bottom:10px;line-height:1.7">' + escHtml(turn.modelAnswer) + '</div>';
+        html += '<div style="font-size: 13px;font-weight:700;color:#c4b5fd;margin-bottom:4px">💬 모범 답변</div>';
+        html += '<div style="font-size: 15px;color:#e2e8f0;padding:9px 13px;background:rgba(99,102,241,.1);border-left:3px solid #6366f1;border-radius:0 10px 10px 0;margin-bottom:10px;line-height:1.7">' + escHtml(turn.modelAnswer) + '</div>';
 
         /* ④ 내 답변 */
-        html += '<div style="font-size:11px;font-weight:700;color:#93c5fd;margin-bottom:4px">🧑‍🏫 내 답변</div>';
-        html += '<div style="font-size:13px;color:#e2e8f0;padding:9px 13px;background:rgba(59,130,246,.08);border-left:3px solid #3b82f6;border-radius:0 10px 10px 0;margin-bottom:12px;line-height:1.7">' + escHtml(h.teacherInput || '') + '</div>';
+        html += '<div style="font-size: 13px;font-weight:700;color:#93c5fd;margin-bottom:4px">🧑‍🏫 내 답변</div>';
+        html += '<div style="font-size: 15px;color:#e2e8f0;padding:9px 13px;background:rgba(59,130,246,.08);border-left:3px solid #3b82f6;border-radius:0 10px 10px 0;margin-bottom:12px;line-height:1.7">' + escHtml(h.teacherInput || '') + '</div>';
 
         /* ⑤ 피드백 breakdown */
-        html += '<div style="border:1px solid #334155;border-radius:10px;overflow:hidden;font-size:13px">';
+        html += '<div style="border:1px solid #334155;border-radius:10px;overflow:hidden;font-size: 15px">';
         for (var bi = 0; bi < breakdown.length; bi++) {
           var c = breakdown[bi];
           if (c.penalty) continue;
@@ -907,18 +907,18 @@ function showEndScreen() {
           var bg   = ratio >= 1 ? 'rgba(34,197,94,.05)' : ratio > 0 ? 'rgba(245,158,11,.05)' : 'rgba(239,68,68,.05)';
           html += '<div style="padding:10px 14px;background:' + bg + ';border-bottom:1px solid #1e293b">';
           html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">';
-          html += '<div style="display:flex;align-items:center;gap:5px"><span>' + (c.icon||'') + '</span><b style="color:' + col + '">' + escHtml(c.label) + '</b><span style="font-size:11px;color:#8294a7">' + escHtml(d.p) + '</span></div>';
-          html += '<span style="font-size:11px;font-weight:800;color:' + col + ';background:' + col + '22;padding:2px 8px;border-radius:8px">' + sIcon + ' ' + c.earned + '/' + c.max + '점</span>';
+          html += '<div style="display:flex;align-items:center;gap:5px"><span>' + (c.icon||'') + '</span><b style="color:' + col + '">' + escHtml(c.label) + '</b><span style="font-size: 13px;color:#8294a7">' + escHtml(d.p) + '</span></div>';
+          html += '<span style="font-size: 13px;font-weight:800;color:' + col + ';background:' + col + '22;padding:2px 8px;border-radius:8px">' + sIcon + ' ' + c.earned + '/' + c.max + '점</span>';
           html += '</div>';
           if (c.hitWords && c.hitWords.length > 0) {
             html += '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px">';
-            html += '<span style="font-size:11px;color:#4ade80;font-weight:600">✓ 포함:</span>';
+            html += '<span style="font-size: 13px;color:#4ade80;font-weight:600">✓ 포함:</span>';
             c.hitWords.forEach(function(w) {
-              html += '<span style="font-size:11px;color:#4ade80;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:5px;padding:1px 6px">' + escHtml(w) + '</span>';
+              html += '<span style="font-size: 13px;color:#4ade80;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:5px;padding:1px 6px">' + escHtml(w) + '</span>';
             });
             html += '</div>';
           }
-          html += '<div style="font-size:12px;padding:6px 10px;border-radius:6px;border-left:3px solid ' + col + ';background:' + col + '11;line-height:1.6">';
+          html += '<div style="font-size: 14px;padding:6px 10px;border-radius:6px;border-left:3px solid ' + col + ';background:' + col + '11;line-height:1.6">';
           html += '<span style="color:' + col + ';font-weight:600">' + escHtml(msg) + '</span>';
           if (ratio < 1) html += '<div style="color:#94a3b8;margin-top:2px">' + escHtml(d.tip) + '</div>';
           html += '</div></div>';
@@ -926,17 +926,17 @@ function showEndScreen() {
         /* 방어적 감점 */
         breakdown.forEach(function(pc) {
           if (pc.penalty && pc.hitWords && pc.hitWords.length > 0) {
-            html += '<div style="padding:8px 14px;background:rgba(239,68,68,.06);border-top:1px solid #1e293b;font-size:12px;color:#f87171">';
+            html += '<div style="padding:8px 14px;background:rgba(239,68,68,.06);border-top:1px solid #1e293b;font-size: 14px;color:#f87171">';
             html += '⚠️ <b>방어적 표현 감점:</b> \"' + escHtml(pc.hitWords.join('", "')) + '\" — 방어적 표현은 학부모 감정을 악화시킵니다.';
             html += '</div>';
           }
         });
         if (lengthBonus) {
-          html += '<div style="padding:7px 14px;background:rgba(99,102,241,.05);border-top:1px solid #1e293b;font-size:12px;color:#a5b4fc">⭐ 성실도 보너스 +5점 — 충분한 길이의 답변이에요!</div>';
+          html += '<div style="padding:7px 14px;background:rgba(99,102,241,.05);border-top:1px solid #1e293b;font-size: 14px;color:#a5b4fc">⭐ 성실도 보너스 +5점 — 충분한 길이의 답변이에요!</div>';
         }
         /* 팁 */
         if (turn.tip) {
-          html += '<div style="padding:8px 14px;background:#0a1628;border-top:1px solid #334155;font-size:12px;color:#8294a7;line-height:1.55">' + escHtml(turn.tip) + '</div>';
+          html += '<div style="padding:8px 14px;background:#0a1628;border-top:1px solid #334155;font-size: 14px;color:#8294a7;line-height:1.55">' + escHtml(turn.tip) + '</div>';
         }
         html += '</div>';  /* /breakdown box */
         html += '</div>';  /* /turn block */

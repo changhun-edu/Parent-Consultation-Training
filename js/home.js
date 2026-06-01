@@ -25,7 +25,7 @@ async function init() {
 /* ── 시나리오 로드 ──────────────────────────────────── */
 async function loadScenarios() {
   try {
-    const res  = await fetch('data/scenarios.json');
+    const res  = await fetch('scenarios.json');
     const data = await res.json();
     allScenarios = data.scenarios;
   } catch (e) {

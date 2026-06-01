@@ -53,7 +53,7 @@ async function init() {
   if (!id) { location.href = 'index.html'; return; }
 
   try {
-    const data = await fetch('data/scenarios.json').then(r => r.json());
+    const data = await fetch('scenarios.json').then(r => r.json());
     state.scenario = data.scenarios.find(s => s.id === id);
   } catch { showError('데이터를 불러오지 못했습니다.'); return; }
 

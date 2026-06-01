@@ -1,24 +1,23 @@
 /* =====================================================
    home.js  –  시나리오 목록 페이지 로직
-   (유목화 버전: 일반 6턴 / 민감 9턴 / 고난도 12턴)
+   (index.html 라이트 테마 구조에 맞춤)
    ===================================================== */
 
-const DIFFICULTY_LABEL = { 1: '⭐ 초급', 2: '⭐⭐ 중급', 3: '⭐⭐⭐ 고급' };
-const TYPE_LABEL = {
-  '일반':  { label: '일반 상황',  color: '#22c55e', turns: 6,  bg: 'rgba(34,197,94,.1)',  border: 'rgba(34,197,94,.3)'  },
-  '민감':  { label: '민감 상황',  color: '#f59e0b', turns: 9,  bg: 'rgba(245,158,11,.1)', border: 'rgba(245,158,11,.3)' },
-  '고난도':{ label: '고난도 민원', color: '#ef4444', turns: 12, bg: 'rgba(239,68,68,.1)',  border: 'rgba(239,68,68,.3)'  },
-};
+const DIFF_COLOR = { '일반': 'green', '민감': 'yellow', '고난도': 'red' };
+const DIFF_LABEL = { '일반': '일반 상황', '민감': '민감 상황', '고난도': '고난도 민원' };
+const DIFF_TURNS = { '일반': 6, '민감': 9, '고난도': 12 };
 
 let allScenarios = [];
-let activeFilter = 'all';
+let filterDiff = 'all';
+let filterCat  = 'all';
 
 /* ── 초기화 ─────────────────────────────────────────── */
 async function init() {
   await loadScenarios();
   renderStats();
-  renderScenarios(allScenarios);
-  bindFilters();
+  render();
+  setupChips('filter-diff', val => { filterDiff = val; render(); });
+  setupChips('filter-cat',  val => { filterCat  = val; render(); });
   renderHistoryPreview();
 }
 
@@ -30,99 +29,75 @@ async function loadScenarios() {
     allScenarios = data.scenarios;
   } catch (e) {
     document.getElementById('scenario-grid').innerHTML =
-      '<p style="color:var(--txt3);text-align:center;padding:40px">시나리오를 불러올 수 없습니다.</p>';
+      `<div class="state-box">
+        <div class="state-icon">⚠️</div>
+        <div class="state-title">시나리오를 불러올 수 없습니다</div>
+        <div class="state-sub">scenarios.json 파일이 같은 폴더에 있는지 확인해 주세요.</div>
+      </div>`;
   }
 }
 
 /* ── 통계 렌더링 ────────────────────────────────────── */
 function renderStats() {
   const history = getHistory();
-  const total   = history.length;
-  const avg     = total ? Math.round(history.reduce((a, h) => a + h.score, 0) / total) : 0;
-  const best    = total ? Math.max(...history.map(h => h.score)) : 0;
+  const done    = history.length;
+  const avg     = done ? Math.round(history.reduce((a, h) => a + h.score, 0) / done) : null;
+  const best    = done ? Math.max(...history.map(h => h.score)) : null;
 
-  setEl('stat-total',     total + '회');
-  setEl('stat-avg',       total ? avg + '점' : '-');
-  setEl('stat-best',      total ? best + '점' : '-');
-  setEl('stat-scenarios', allScenarios.length + '개');
+  setEl('stat-total',     allScenarios.length + '개');
+  setEl('stat-scenarios', done + '회');
+
+  const avgEl  = document.getElementById('stat-avg');
+  const bestEl = document.getElementById('stat-best');
+  if (avgEl)  { avgEl.textContent  = avg  != null ? avg  + '점' : '아직 없음'; avgEl.classList.toggle('empty',  avg  == null); }
+  if (bestEl) { bestEl.textContent = best != null ? best + '점' : '아직 없음'; bestEl.classList.toggle('empty', best == null); }
 }
 
 /* ── 시나리오 카드 렌더링 ───────────────────────────── */
-function renderScenarios(list) {
+function render() {
   const grid = document.getElementById('scenario-grid');
+  let list = allScenarios;
+  if (filterDiff !== 'all') list = list.filter(s => s.scenarioType === filterDiff);
+  if (filterCat  !== 'all') list = list.filter(s => s.category === filterCat);
+
   if (!list.length) {
-    grid.innerHTML = '<p style="color:var(--txt3);text-align:center;padding:40px">해당 유형의 시나리오가 없습니다.</p>';
+    grid.innerHTML = `<div class="state-box">
+      <div class="state-icon">🔍</div>
+      <div class="state-title">해당하는 시나리오가 없습니다</div>
+      <div class="state-sub">필터 조건을 변경해 보세요</div>
+    </div>`;
     return;
   }
 
   grid.innerHTML = list.map((s, i) => {
-    const history    = getHistory();
-    const done       = history.filter(h => h.scenarioId === s.id);
-    const bestScore  = done.length ? Math.max(...done.map(h => h.score)) : null;
-    const scoreColor = bestScore == null ? '' :
-                       bestScore >= 80 ? 'var(--green)' :
-                       bestScore >= 60 ? 'var(--blue)'  :
-                       bestScore >= 40 ? 'var(--yellow)' : 'var(--red)';
+    const col   = DIFF_COLOR[s.scenarioType] || 'green';
+    const lbl   = DIFF_LABEL[s.scenarioType] || '일반 상황';
+    const turns = DIFF_TURNS[s.scenarioType] || 6;
 
-    const typeInfo = TYPE_LABEL[s.scenarioType] || TYPE_LABEL['일반'];
+    const history   = getHistory();
+    const done      = history.filter(h => h.scenarioId === s.id);
+    const bestScore = done.length ? Math.max(...done.map(h => h.score)) : null;
+    const scoreCol  = bestScore == null ? '' :
+                      bestScore >= 80 ? 'var(--green)' :
+                      bestScore >= 60 ? 'var(--teal)'  :
+                      bestScore >= 40 ? 'var(--yellow)' : 'var(--red)';
 
-    return `
-    <article class="scenario-card card card--hover anim-fade-in"
-             style="animation-delay:${i * 60}ms; cursor:pointer;"
-             onclick="startScenario('${s.id}')"
-             role="button" tabindex="0"
-             onkeydown="if(event.key==='Enter')startScenario('${s.id}')">
+    const stars = s.difficulty === 1 ? '⭐' : s.difficulty === 2 ? '⭐⭐' : '⭐⭐⭐';
 
-      <div class="scenario-card__top">
-        <div class="scenario-card__meta">
-          <span class="cat-icon" style="font-size:20px">${s.categoryIcon}</span>
-          <span class="badge" style="background:${typeInfo.bg};border:1px solid ${typeInfo.border};color:${typeInfo.color}">${typeInfo.label}</span>
-          <span class="badge badge--d${s.difficulty}">${DIFFICULTY_LABEL[s.difficulty]}</span>
-          ${bestScore != null ? `<span class="badge" style="background:${scoreColor}18;border:1px solid ${scoreColor}30;color:${scoreColor}">최고 ${bestScore}점</span>` : ''}
-        </div>
-        <div class="scenario-card__cat" style="color:${s.categoryColor}">${s.category}</div>
+    return `<div class="scenario-card ${col} fade-in" style="animation-delay:${i * 0.05}s">
+      <div class="scenario-card-top">
+        <span class="scenario-diff-badge ${col}">${lbl}</span>
+        <span class="scenario-cat-badge">${s.categoryIcon || ''} ${s.category}</span>
+        <span class="scenario-turns">${turns}턴</span>
       </div>
-
-      <h3 class="scenario-card__title">${s.title}</h3>
-      <p class="scenario-card__situation">${s.situation}</p>
-
-      <div class="scenario-card__opening">
-        <span class="scenario-card__opening-icon">💬</span>
-        <span class="scenario-card__opening-text">"${s.turns[0].parentMessage.slice(0, 60)}…"</span>
-      </div>
-
-      <div class="scenario-card__footer">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:12px;color:var(--txt3)">👤 ${s.parentName}</span>
-          <span style="font-size:11px;color:${typeInfo.color};background:${typeInfo.bg};border:1px solid ${typeInfo.border};padding:2px 8px;border-radius:10px">
-            💬 ${typeInfo.turns}턴
-          </span>
-        </div>
-        <span class="btn btn--primary btn--sm">시작하기 →</span>
-      </div>
-    </article>`;
+      <div class="scenario-title">${s.title}</div>
+      <div class="scenario-desc">${s.situation || ''}</div>
+      ${bestScore != null ? `<div style="margin-top:6px;font-size:12px;color:${scoreCol};font-weight:700">🏆 최고 ${bestScore}점</div>` : ''}
+      <button class="scenario-start-btn" onclick="startScenario('${s.id}')">
+        시작하기 →
+      </button>
+    </div>`;
   }).join('');
-}
-
-/* ── 카테고리/유형 필터 ──────────────────────────────── */
-function bindFilters() {
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      activeFilter = btn.dataset.filter;
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      let filtered;
-      if (activeFilter === 'all') {
-        filtered = allScenarios;
-      } else if (['일반', '민감', '고난도'].includes(activeFilter)) {
-        filtered = allScenarios.filter(s => s.scenarioType === activeFilter);
-      } else {
-        filtered = allScenarios.filter(s => s.category === activeFilter);
-      }
-      renderScenarios(filtered);
-    });
-  });
 }
 
 /* ── 최근 기록 미리보기 ─────────────────────────────── */
@@ -132,24 +107,45 @@ function renderHistoryPreview() {
   if (!el) return;
 
   if (!history.length) {
-    el.innerHTML = '<p style="color:var(--txt3);font-size:13px;text-align:center;padding:16px 0">아직 상담 기록이 없습니다. 첫 시나리오를 시작해보세요!</p>';
+    el.innerHTML = `<div class="history-empty-icon">📭</div>
+      <div class="history-empty-text">
+        아직 상담 기록이 없습니다.<br>
+        첫 시나리오를 선택해서 상담을 시작해 보세요!
+      </div>`;
     return;
   }
 
+  el.className = '';  // history-empty 클래스 제거
+  el.style.cssText = 'margin-top:0';
   el.innerHTML = history.map(h => {
     const sc = allScenarios.find(s => s.id === h.scenarioId);
-    const scoreColor = h.score >= 80 ? 'var(--green)' : h.score >= 60 ? 'var(--blue)' : h.score >= 40 ? 'var(--yellow)' : 'var(--red)';
-    const typeInfo = sc ? (TYPE_LABEL[sc.scenarioType] || {}) : {};
-    return `
-    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;margin-bottom:8px">
-      <span style="font-size:20px">${sc ? sc.categoryIcon : '📋'}</span>
+    const scoreColor = h.score >= 80 ? 'var(--green)' : h.score >= 60 ? 'var(--teal)' : h.score >= 40 ? 'var(--yellow)' : 'var(--red)';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;box-shadow:var(--card-shadow)">
+      <span style="font-size:22px">${sc ? (sc.categoryIcon || '📋') : '📋'}</span>
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.title}</div>
-        <div style="font-size:11px;color:var(--txt3)">${h.date} · ${h.label}${typeInfo.label ? ' · ' + typeInfo.label : ''}</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.title || sc?.title || '상담 기록'}</div>
+        <div style="font-size:12px;color:var(--muted)">${h.date || ''} · ${h.label || ''}</div>
       </div>
-      <div style="font-size:18px;font-weight:800;color:${scoreColor}">${h.score}점</div>
+      <div style="font-size:20px;font-weight:800;color:${scoreColor}">${h.score}점</div>
     </div>`;
   }).join('');
+}
+
+/* ── 칩 필터 설정 ────────────────────────────────────── */
+function setupChips(groupId, onSelect) {
+  const group = document.getElementById(groupId);
+  if (!group) return;
+  group.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      group.querySelectorAll('.chip').forEach(c => {
+        c.classList.remove('active', 'green', 'yellow', 'red');
+      });
+      chip.classList.add('active');
+      const col = chip.dataset.color;
+      if (col) chip.classList.add(col);
+      onSelect(chip.dataset.val);
+    });
+  });
 }
 
 /* ── 시나리오 시작 ──────────────────────────────────── */
@@ -174,7 +170,6 @@ function clearHistory() {
   localStorage.removeItem('ct_history');
   renderStats();
   renderHistoryPreview();
-  renderScenarios(allScenarios);
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -145,20 +145,22 @@ button { font-family: inherit; cursor: pointer; }
 }
 .card-inner.flipped { transform: rotateY(180deg); }
 .card-face {
-  position: absolute; inset:0; border-radius: var(--radius);
+  border-radius: var(--radius);
   backface-visibility: hidden; -webkit-backface-visibility: hidden;
   display: flex; flex-direction: column; padding: 20px 24px;
+  min-height: 180px; width: 100%;
 }
 .card-front {
   background: linear-gradient(135deg,#162844 0%,#1e3558 100%);
   border: 1px solid rgba(255,255,255,.08);
   justify-content: space-between;
+  position: relative;
 }
 .card-back {
   background: var(--bg);
   border: 1px solid rgba(99,102,241,.3);
   transform: rotateY(180deg);
-  justify-content: space-between;
+  position: absolute; inset: 0;
 }
 
 /* 앞면 */
@@ -583,20 +585,10 @@ function renderViewer() {
 
   // 뒤집기 상태 리셋
   const inner = document.getElementById('card-inner');
+  inner.style.minHeight = '';
   inner.style.transition = 'none';
   inner.classList.toggle('flipped', isFlipped);
-  // 카드 높이를 콘텐츠에 맞게 자동 조정
-  requestAnimationFrame(() => {
-    const front = inner.querySelector('.card-front');
-    const back  = inner.querySelector('.card-back');
-    if (front && back) {
-      // 두 면 모두 일시적으로 보이게 해서 높이 측정
-      const fh = front.scrollHeight + 40;
-      const bh = back.scrollHeight  + 40;
-      inner.style.minHeight = Math.max(fh, bh, 200) + 'px';
-    }
-    inner.style.transition = '';
-  });
+  requestAnimationFrame(() => { inner.style.transition = ''; });
 
   // 버튼 상태
   document.getElementById('btn-flip').textContent = isFlipped ? '← 문제 보기' : '뒤집기 →';

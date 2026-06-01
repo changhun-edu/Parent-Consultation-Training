@@ -99,10 +99,10 @@ input, textarea { font-family: inherit; }
 
 .btn--ghost {
   background: transparent;
-  border: 1px solid var(--border);
-  color: var(--txt2);
+  border: 1px solid rgba(148,163,184,.4);
+  color: #c4d0e0;
 }
-.btn--ghost:hover { border-color: var(--indigo); color: var(--txt); background: rgba(99,102,241,.08); }
+.btn--ghost:hover { border-color: var(--indigo); color: #f1f5f9; background: rgba(99,102,241,.12); }
 
 .btn--sm { padding: 7px 14px; font-size: 14px; }
 .btn--lg { padding: 14px 28px; font-size: 17px; }
@@ -148,15 +148,15 @@ input, textarea { font-family: inherit; }
   align-items: center;
   gap: 10px;
   padding: 10px 16px;
-  background: rgba(15,23,42,.7);
-  border: 1px solid var(--border2);
+  background: rgba(36,52,74,.9);
+  border: 1px solid rgba(99,102,241,.25);
   border-radius: var(--radius-sm);
 }
-.emotion-bar__label { font-size: 14px; color: var(--txt3); white-space: nowrap; }
+.emotion-bar__label { font-size: 14px; color: #c4d0e0; white-space: nowrap; font-weight: 600; }
 .emotion-bar__track {
   flex: 1;
   height: 6px;
-  background: rgba(30,41,59,.9);
+  background: rgba(255,255,255,.12);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -171,6 +171,7 @@ input, textarea { font-family: inherit; }
   min-width: 36px;
   text-align: right;
   white-space: nowrap;
+  color: #e2e8f0;
 }
 
 /* ── 애니메이션 ─────────────────────────────────────── */

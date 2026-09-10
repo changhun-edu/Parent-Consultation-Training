@@ -392,10 +392,13 @@
       <div><span class="end-label-badge" id="end-label-badge">—</span></div>
       <p class="end-summary" id="end-summary"></p>
       <!-- 레이더 차트 -->
-      <div id="radar-wrap" style="margin:22px auto 0;max-width:300px;border-top:1px solid var(--border2);padding-top:20px">
+      <div id="radar-wrap" style="margin:22px auto 0;max-width:340px;border-top:1px solid var(--border2);padding-top:20px">
         <div style="font-size: 13px;font-weight:700;color:#b0bfd0;letter-spacing:.06em;margin-bottom:10px;text-align:center">📊 항목별 상담 역량</div>
-        <svg id="radar-svg" viewBox="-145 -145 290 290" style="width:100%;height:auto;display:block;"></svg>
+        <svg id="radar-svg" viewBox="-190 -150 380 300" style="width:100%;height:auto;display:block;overflow:visible"></svg>
       </div>
+      <!-- 항목 체크리스트 -->
+      <div id="end-checklist"
+           style="margin:20px auto 0;max-width:460px;border-top:1px solid var(--border2);padding-top:18px;text-align:left"></div>
       <!-- 턴별 점수 차트 -->
       <div class="end-turn-chart" id="end-turn-chart"
            style="justify-content:center;border-top:1px solid var(--border2);margin-top:20px;padding-top:16px"></div>
@@ -681,14 +684,72 @@ function appendToHistory(parentMsg, teacherInput, score) {
 /* ════════════════════════════════════════════════════
    키워드 자동 평가
    ════════════════════════════════════════════════════ */
-function evaluateInput(text, turn) {
-  let total = 0;
-  for (const cfg of RUBRIC) {
-    const hits = cfg.words.filter(w => text.includes(w));
-    const raw  = Math.min(Math.abs(cfg.max), hits.length * Math.abs(cfg.perHit));
-    total += cfg.penalty ? -raw : raw;
+function hitWords(text, words) {
+  var out = [];
+  for (var i = 0; i < words.length; i++) if (text.indexOf(words[i]) !== -1) out.push(words[i]);
+  return out;
+}
+
+/* 만점 기준은 모범 답변이다. 모범 답변이 그 항목에서 쓴 표현 수(최대 3)를
+   기준으로 삼아, 같은 수만큼 쓰면 만점이 된다. */
+function itemEarned(text, item) {
+  var n = hitWords(text, item.words).length;
+  return Math.min(item.max, Math.round(item.max * n / item.need));
+}
+
+/* 이 턴에서 채점할 항목을 '모범 답변'에서 뽑아낸다.
+   모범 답변에 없는 요소는 사용자에게도 요구하지 않는다. */
+function turnRubric(turn) {
+  var model = (turn && turn.modelAnswer) || '';
+  var scored = [], penalties = [], sum = 0;
+  for (var i = 0; i < RUBRIC.length; i++) {
+    var c = RUBRIC[i];
+    if (c.penalty) { penalties.push(c); continue; }
+    if (hitWords(model, c.words).length > 0) { scored.push(c); sum += c.max; }
   }
+  var free = scored.length === 0;   // 모범 답변에 뚜렷한 요소가 없는 턴
+  if (free) {
+    scored = RUBRIC.filter(function(c) { return !c.penalty; });
+    sum = scored.reduce(function(a, c) { return a + c.max; }, 0);
+  }
+  var items = scored.map(function(c) {
+    var m = free ? c.max : Math.round(c.max * 100 / sum);
+    var need = free ? 1 : Math.min(3, Math.max(1, hitWords(model, c.words).length));
+    return { key: c.key, label: c.label, icon: c.icon, words: c.words,
+             max: m, need: need };
+  });
+  if (!free && items.length) {   // 반올림 오차 보정
+    var t = items.reduce(function(a, x) { return a + x.max; }, 0);
+    items[0].max += 100 - t;
+  }
+  var keys = items.map(function(x) { return x.key; });
+  var skipped = RUBRIC.filter(function(c) { return !c.penalty && keys.indexOf(c.key) === -1; });
+  return { items: items, penalties: penalties, free: free, skipped: skipped };
+}
+
+/* ════════════════════════════════════════════════════
+   키워드 자동 평가 (턴별 채점 항목 기준)
+   ════════════════════════════════════════════════════ */
+function evaluateInput(text, turn) {
+  var tr = turnRubric(turn);
+  var total = 0;
+  if (tr.free) {
+    /* 모범 답변에도 네 요소가 없는 턴(주로 확인·마무리 발화)은
+       기본 75점에서 시작해, 요소를 챙긴 만큼 더한다. */
+    var best = 0;
+    tr.items.forEach(function(it) {
+      var r = it.max > 0 ? itemEarned(text, it) / it.max : 0;
+      if (r > best) best = r;
+    });
+    total = 75 + Math.round(best * 25);
+  } else {
+    tr.items.forEach(function(it) { total += itemEarned(text, it); });
+  }
+  tr.penalties.forEach(function(c) {
+    total -= Math.min(45, hitWords(text, c.words).length * Math.abs(c.perHit));
+  });
   if (text.length < 20) total = Math.floor(total * 0.6);
+  if (text.length >= 60) total += 5;
   return Math.max(0, Math.min(100, total));
 }
 
@@ -799,6 +860,51 @@ function drawRadarChart(scores) {
   if (el) el.innerHTML = svg;
 }
 
+/* ════════════════════════════════════════════════════
+   항목 체크리스트 — 무엇이 몇 번째 대화에서 나왔나
+   ════════════════════════════════════════════════════ */
+function renderChecklist(catN, catHits) {
+  var box = document.getElementById('end-checklist');
+  if (!box) return;
+  var order = [
+    { key:'empathy',  label:'공감 표현', icon:'💛', color:'#f59e0b' },
+    { key:'solution', label:'해결 방향', icon:'🔧', color:'#3b82f6' },
+    { key:'fact',     label:'사실 기반', icon:'📋', color:'#22c55e' },
+    { key:'followup', label:'후속 약속', icon:'📅', color:'#a78bfa' }
+  ];
+  var html = '<div style="font-size: 13px;font-weight:700;color:#b0bfd0;letter-spacing:.06em;margin-bottom:12px;text-align:center">✅ 이번 상담에서 챙긴 것</div>';
+
+  for (var i = 0; i < order.length; i++) {
+    var o = order[i];
+    var n = catN[o.key] || 0;
+    var hits = catHits[o.key] || [];
+    var ok = hits.length > 0;
+    var col = n === 0 ? '#64748b' : (ok ? '#22c55e' : '#ef4444');
+    var mark = n === 0 ? '—' : (ok ? '✓' : '✗');
+    var detail;
+    if (n === 0) {
+      detail = '이번 시나리오에서는 채점 대상이 아니었습니다.';
+    } else if (ok) {
+      detail = '채점 대상 ' + n + '개 대화 중 ' +
+               hits.map(function(t) { return t + '번째'; }).join(', ') + ' 대화에서 나왔습니다.';
+    } else {
+      detail = '채점 대상이었던 ' + n + '개 대화에서 한 번도 나오지 않았습니다.';
+      var d = RD[o.key];
+      if (d) detail += ' ' + d.tip;
+    }
+    html += '<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 12px;margin-bottom:6px;background:' + col + '10;border-left:3px solid ' + col + ';border-radius:0 8px 8px 0">';
+    html += '<span style="font-size: 16px;font-weight:800;color:' + col + ';line-height:1.4">' + mark + '</span>';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div style="font-size: 14px;font-weight:700;color:#e2e8f0">' + o.icon + ' ' + o.label + '</div>';
+    html += '<div style="font-size: 13px;color:#94a3b8;line-height:1.6;margin-top:2px">' + escHtml(detail) + '</div>';
+    html += '</div></div>';
+  }
+  html += '<div style="font-size: 12px;color:#64748b;line-height:1.6;margin-top:8px">' +
+          '※ 네 요소는 한 번의 답변에 다 넣는 것이 아니라 대화 전체에 나눠 담는 것입니다. ' +
+          '각 대화의 채점 항목은 그 턴의 모범 답변에 들어 있는 요소만으로 정합니다.</div>';
+  box.innerHTML = html;
+}
+
 function showEndScreen() {
   state.phase = 'complete';
 
@@ -843,17 +949,26 @@ function showEndScreen() {
   badge.textContent       = tLabel;
   $('end-score').style.color = tColor;
 
-  // ── 레이더 차트 (항목별 평균) ─────────────────────
-  var catTotals = { empathy: 0, solution: 0, fact: 0, followup: 0 };
-  var catCount  = state.turnHistory.length;
-  if (catCount > 0) {
-    state.turnHistory.forEach(function(h) {
-      var cats = evaluateCategories(h.teacherInput || '');
-      Object.keys(catTotals).forEach(function(k) { catTotals[k] += cats[k]; });
+  // ── 항목별 집계 (그 항목을 채점한 턴만 분모로 삼는다) ──
+  var catSum  = { empathy: 0, solution: 0, fact: 0, followup: 0 };
+  var catN    = { empathy: 0, solution: 0, fact: 0, followup: 0 };
+  var catHits = { empathy: [], solution: [], fact: [], followup: [] };
+  state.turnHistory.forEach(function(h, i) {
+    var tr = turnRubric(state.scenario.turns[i]);
+    if (tr.free) return;   /* 요구 요소가 없는 턴은 집계에서 제외 */
+    tr.items.forEach(function(it) {
+      var e = itemEarned(h.teacherInput || '', it);
+      catSum[it.key] += it.max > 0 ? Math.round(e / it.max * 100) : 0;
+      catN[it.key]   += 1;
+      if (e > 0) catHits[it.key].push(i + 1);
     });
-    Object.keys(catTotals).forEach(function(k) { catTotals[k] = Math.round(catTotals[k] / catCount); });
-  }
+  });
+  var catTotals = { empathy: 0, solution: 0, fact: 0, followup: 0 };
+  Object.keys(catTotals).forEach(function(k) {
+    catTotals[k] = catN[k] ? Math.round(catSum[k] / catN[k]) : 0;
+  });
   drawRadarChart(catTotals);
+  renderChecklist(catN, catHits);
 
   // ── 턴별 점수 + 모범 답변 비교 ───────────────────
   const completedTurns = state.allScores.length;
@@ -880,22 +995,24 @@ function showEndScreen() {
         var sc    = h.score;
         var scCol = sc >= 70 ? '#22c55e' : sc >= 40 ? '#f59e0b' : '#ef4444';
 
-        /* ── 루브릭 breakdown 계산 ── */
+        /* ── 이 턴의 채점 항목만 breakdown 계산 ── */
+        var tr = turnRubric(turn);
+        var myText = h.teacherInput || '';
         var breakdown = [];
-        var lengthBonus = (h.teacherInput && h.teacherInput.length >= 60) ? 5 : 0;
-        for (var ri = 0; ri < RUBRIC.length; ri++) {
-          var cfg = RUBRIC[ri];
-          var hitWords = [];
-          for (var wi = 0; wi < cfg.words.length; wi++) {
-            if (h.teacherInput && h.teacherInput.includes(cfg.words[wi])) hitWords.push(cfg.words[wi]);
-          }
-          var pts = cfg.penalty
-            ? hitWords.length * cfg.perHit
-            : Math.min(cfg.max, hitWords.length * cfg.perHit);
-          breakdown.push({ key: cfg.key, label: cfg.label, icon: cfg.icon,
-            max: cfg.penalty ? 0 : cfg.max, earned: pts,
-            hitWords: hitWords.slice(0,4), penalty: !!cfg.penalty });
+        var lengthBonus = (myText.length >= 60) ? 5 : 0;
+        if (!tr.free) {
+          tr.items.forEach(function(it) {
+            breakdown.push({ key: it.key, label: it.label, icon: it.icon,
+              max: it.max, earned: itemEarned(myText, it),
+              hitWords: hitWords(myText, it.words).slice(0,4), penalty: false });
+          });
         }
+        tr.penalties.forEach(function(cfg) {
+          var hw = hitWords(myText, cfg.words);
+          breakdown.push({ key: cfg.key, label: cfg.label, icon: cfg.icon,
+            max: 0, earned: -Math.min(45, hw.length * 15),
+            hitWords: hw.slice(0,4), penalty: true });
+        });
 
         var html = '<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border2)">';
 
@@ -946,6 +1063,19 @@ function showEndScreen() {
           if (ratio < 1) html += '<div style="color:#94a3b8;margin-top:2px">' + escHtml(d.tip) + '</div>';
           html += '</div></div>';
         }
+        /* 이번 턴 채점 제외 항목 */
+        if (tr.free) {
+          html += '<div style=\"padding:9px 14px;background:rgba(148,163,184,.06);border-top:1px solid #1e293b;font-size: 13px;color:#8294a7;line-height:1.6\">';
+          html += '이 턴의 모범 답변에도 네 요소가 뚜렷하게 드러나지 않습니다(주로 확인·마무리 발화). 그래서 항목별 채점 없이 기본 점수로 처리하고, 요소를 챙긴 만큼만 더했습니다.';
+          html += '</div>';
+        } else if (tr.skipped.length) {
+          html += '<div style=\"padding:9px 14px;background:rgba(148,163,184,.06);border-top:1px solid #1e293b;font-size: 13px;color:#8294a7;line-height:1.6\">';
+          html += '⃝ 이번 턴에서는 채점하지 않은 항목: ';
+          html += tr.skipped.map(function(c) { return escHtml((c.icon || '') + ' ' + c.label); }).join(', ');
+          html += ' — 모범 답변에도 없는 요소라 요구하지 않습니다.';
+          html += '</div>';
+        }
+
         /* 방어적 감점 */
         breakdown.forEach(function(pc) {
           if (pc.penalty && pc.hitWords && pc.hitWords.length > 0) {
@@ -980,11 +1110,17 @@ function showEndScreen() {
   } else { $('end-improvements-section').style.display = 'none'; }
 
   const doneOf = `${completedTurns}/${state.totalTurns}회 대화`;
+  var LBL = { empathy:'공감 표현(💛)', solution:'해결 방향(🔧)', fact:'사실 기반(📋)', followup:'후속 약속(📅)' };
+  var weakest = null;
+  Object.keys(catTotals).forEach(function(k) {
+    if (!catN[k]) return;
+    if (weakest === null || catTotals[k] < catTotals[weakest]) weakest = k;
+  });
   setText('end-next-practice',
     `${doneOf} 완료, 평균 ${avg}점. ` +
     (avg >= 70
       ? '훌륭합니다! 다음 단계 시나리오에 도전해보세요.'
-      : '공감 표현(💛)과 후속 약속(📅)을 집중 연습해보세요.')
+      : (weakest ? LBL[weakest] + '을 집중 연습해보세요.' : '핵심 가이드를 한 번 더 살펴보세요.'))
   );
 
   const es = $('end-screen');

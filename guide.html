@@ -203,6 +203,15 @@
   .c2 .principle-score { background: #d1f5f2; color: #1a7a70; }
   .c3 .principle-score { background: #efe6f9; color: #6b2fa0; }
   .c4 .principle-score { background: #d4f0e0; color: #1a6b40; }
+  .principle-note {
+    margin-top: 10px; padding: 10px 12px; border-radius: 8px;
+    background: rgba(46,196,182,.10); border-left: 3px solid var(--teal);
+    font-size: 14px; line-height: 1.65; color: var(--text);
+  }
+  .principle-parts {
+    margin: 6px 0 2px; font-size: 12px; color: var(--muted); line-height: 1.5;
+  }
+  .principle-parts b { color: var(--text); font-weight: 700; }
   .principle-quote {
     font-size: 13px; color: var(--muted); font-style: italic;
     margin-bottom: 12px; line-height: 1.6;
@@ -471,6 +480,9 @@
   <section class="section active" id="tab-principles">
     <div class="section-intro">
       학부모 상담은 네 가지 요소로 평가됩니다. 각 항목이 <strong>왜 중요한지</strong> 이해하고, 좋은 예·나쁜 예를 통해 패턴을 익히세요. 이 네 가지가 자연스럽게 나오면 상담의 절반은 성공입니다.
+      <div class="principle-note">
+        네 항목을 한 번의 답변에 모두 담을 필요는 없습니다. <strong>네 항목의 비중은 그 턴의 모범 답변에 따라 달라지며</strong>, 모범 답변에 없는 요소는 그 턴에서 채점하지 않습니다. 항목마다 반드시 있어야 할 <strong>핵심 요소</strong>와, 있으면 더 좋은 <strong>부가 요소</strong>로 나누어 봅니다.
+      </div>
     </div>
 
     <div class="principle-grid">
@@ -479,9 +491,10 @@
         <div class="principle-header">
           <div class="principle-icon c1">💛</div>
           <span class="principle-name">공감 표현</span>
-          <span class="principle-score">최대 30점</span>
+          <span class="principle-score">핵심: 감정 인정</span>
         </div>
         <div class="principle-quote">"학부모의 감정을 먼저 인정해야 대화가 열립니다."</div>
+        <div class="principle-parts">핵심 <b>감정 인정</b> · 부가 <b>감정을 짚어 주는 표현</b></div>
         <div class="eg-row">
           <span class="eg-label good">✅ 좋은 예</span>
           <span class="eg-text">"많이 놀라셨겠어요. 그 마음 충분히 이해합니다. 얼마나 속상하셨을지 저도 마음이 아픕니다."</span>
@@ -496,9 +509,10 @@
         <div class="principle-header">
           <div class="principle-icon c2">🔧</div>
           <span class="principle-name">해결 방향</span>
-          <span class="principle-score">최대 25점</span>
+          <span class="principle-score">핵심: 행동 의지</span>
         </div>
         <div class="principle-quote">"교사가 무엇을 할지 보여줘야 신뢰가 생깁니다."</div>
+        <div class="principle-parts">핵심 <b>행동 의지</b> · 부가 <b>구체적인 행동 계획</b></div>
         <div class="eg-row">
           <span class="eg-label good">✅ 좋은 예</span>
           <span class="eg-text">"확인해보겠습니다. 함께 방법을 찾아보겠습니다. 이야기 나눠보겠습니다."</span>
@@ -513,9 +527,10 @@
         <div class="principle-header">
           <div class="principle-icon c3">📋</div>
           <span class="principle-name">사실 기반</span>
-          <span class="principle-score">최대 20점</span>
+          <span class="principle-score">핵심: 상황 설명</span>
         </div>
         <div class="principle-quote">"상황을 객관적으로 설명해야 오해가 줄어듭니다."</div>
+        <div class="principle-parts">핵심 <b>상황 설명</b> · 부가 <b>시각·장소 등 구체적 정황</b></div>
         <div class="eg-row">
           <span class="eg-label good">✅ 좋은 예</span>
           <span class="eg-text">"당시 상황은 이랬습니다. 제가 직접 확인했을 때 보건실에서 처치 후 정상 수업에 참여했습니다."</span>
@@ -530,9 +545,10 @@
         <div class="principle-header">
           <div class="principle-icon c4">📅</div>
           <span class="principle-name">후속 약속</span>
-          <span class="principle-score">최대 15점</span>
+          <span class="principle-score">핵심: 연락·조치 약속</span>
         </div>
         <div class="principle-quote">"언제, 어떻게 연락할지 약속하면 학부모의 불안이 줄어듭니다."</div>
+        <div class="principle-parts">핵심 <b>연락·조치 약속</b> · 부가 <b>구체적인 시점</b></div>
         <div class="eg-row">
           <span class="eg-label good">✅ 좋은 예</span>
           <span class="eg-text">"오늘 방과 후까지 문자로 알려드리겠습니다. 금요일까지 결과를 꼭 연락드리겠습니다."</span>
@@ -546,7 +562,7 @@
 
     <!-- 감점 표현 -->
     <div class="penalty-box">
-      <div class="penalty-header">⚠️ 반드시 피해야 할 방어적 표현 <span style="font-size:12px;color:var(--red);font-weight:600;margin-left:4px">(발화당 −15점)</span></div>
+      <div class="penalty-header">⚠️ 반드시 피해야 할 방어적 표현 <span style="font-size:12px;color:var(--red);font-weight:600;margin-left:4px">(표현당 −15점, 한 발화에서 최대 −45점)</span></div>
       <div class="penalty-chips">
         <span class="penalty-chip">규정상</span>
         <span class="penalty-chip">원래 그런</span>
@@ -558,6 +574,10 @@
         <span class="penalty-chip">아닌데요</span>
         <span class="penalty-chip">저는 잘못이</span>
         <span class="penalty-chip">당연히</span>
+        <span class="penalty-chip">드릴 수 없</span>
+        <span class="penalty-chip">알아서</span>
+        <span class="penalty-chip">불가능합니다</span>
+        <span class="penalty-chip">안 됩니다</span>
       </div>
     </div>
 

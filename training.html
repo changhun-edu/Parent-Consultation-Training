@@ -482,7 +482,11 @@ const RUBRIC = [
         [/(하|되|드리|보|주|가|오|찾|맞|받)겠(습니다|어요|네요|고)/, 1],
         [/(할|드릴|볼|줄|해볼|찾아볼)게요/, 1],
         [/(해|하)(보겠|볼게요|보고|봐야)/, 0.7],
-        [/함께|같이|협력|도와드리|돕겠/, 0.7]
+        [/함께|같이|협력|도와드리|돕겠/, 0.7],
+        [/(가능|하실수있|받으실수있|이용하실수|신청하실수|되십니다|가능합니다)/, 1],
+        [/하시면(됩니다|돼요|좋|괜찮|도움)/, 1],
+        [/권해|추천|제안|안내드리|안내해/, 0.7],
+        [/(바랍니다|주세요|해주시면|하시기|하시는게)/, 0.7]
       ] },
     extra:{ name:'구체적인 행동 계획',
       words:['확인','살펴보','이야기 나누','방법을','점검','파악하겠'],
@@ -781,6 +785,12 @@ function phraseOf(text, M, pos, len) {
 
 /* 한 파트(core 또는 extra)에서 잡힌 신호.
    claimed 는 우선순위가 높은 항목이 이미 가져간 표현 — 중복 계상을 막는다. */
+/* 매칭 직후 5~6글자 안에 부정 표현이 오면 신호로 치지 않는다.
+   “확인해 드릴 수 없습니다” 같은 문장을 해결 방향으로 잘못 세지 않기 위해. */
+function negatedAt(nt, pos, len) {
+  return /없|못|않|아니/.test(nt.slice(pos + len, pos + len + 6));
+}
+
 function partSignals(text, part, claimed) {
   var M = normMap(text), nt = M.s, out = [], mine = [];
   function taken(s) {
@@ -791,25 +801,98 @@ function partSignals(text, part, claimed) {
       if (mine[i].indexOf(s) !== -1 || s.indexOf(mine[i]) !== -1) return true;
     return false;
   }
-  (part.words || []).forEach(function(w) {
+  function addWord(w, weight) {
     var nw = normText(w), at = nw ? nt.indexOf(nw) : -1;
-    if (at !== -1 && !taken(nw)) {
-      mine.push(nw);
-      out.push({ t: w, w: 1, ph: phraseOf(text, M, at, nw.length) });
-    }
-  });
+    if (at === -1 || taken(nw) || negatedAt(nt, at, nw.length)) return;
+    mine.push(nw);
+    out.push({ t: w, w: weight, ph: phraseOf(text, M, at, nw.length) });
+  }
+  (part.words || []).forEach(function(w) { addWord(w, 1); });
   (part.patterns || []).forEach(function(pr) {
     var m = nt.match(pr[0]);
-    if (m && m[0] && !taken(m[0])) {
+    if (m && m[0] && !taken(m[0]) && !negatedAt(nt, m.index, m[0].length)) {
       mine.push(m[0]);
       out.push({ t: m[0], w: pr[1], ph: phraseOf(text, M, m.index, m[0].length) });
     }
   });
+  /* 그 턴의 모범 답변에서 뽑은 내용어 — 같은 내용을 말했다는 약한 신호(0.5) */
+  (part.softWords || []).forEach(function(w) { addWord(w, 0.5); });
   return out;
 }
 
 function sigStrength(sigs) {
   return sigs.reduce(function(a, s) { return a + s.w; }, 0);
+}
+
+/* ── 턴별 내용어 ────────────────────────────────────
+   모범 답변의 각 문장이 어떤 항목을 말하고 있는지 보고,
+   그 문장의 고유 낱말을 그 턴 한정 사전으로 삼는다. */
+var CONTENT_STOP = ['습니다','어머니','아버님','선생님','하겠습','드리겠','드릴게','말씀해','말씀드',
+  '그래도','그리고','그런데','정말로','충분히','앞으로','부탁드','감사합','죄송합','알겠습','있습니',
+  '좋겠습','같습니','하시면','필요하','때문에','경우에','부분은','부분이','그렇게','이렇게','저희는'];
+var CONTENT_CACHE = {};
+
+var VERBISH_END = /(해|겠|습니|시면|시는|셨|했을|었을|하며|해서|하고)$/;
+function contentTokens(text) {
+  var out = [];
+  (text || '').split(/[^가-힣]+/).forEach(function(w) {
+    if (w.length < 3) return;
+    if (/[다요죠까]$/.test(w)) return;            /* 용언으로 끝나는 어절은 내용어가 아니다 */
+    for (var L = 3; L <= 5 && L <= w.length; L++) {
+      var c = w.slice(0, L);
+      if (/[다요죠까]$/.test(c) || VERBISH_END.test(c)) continue;
+      out.push(c);
+    }
+  });
+  return out;
+}
+
+function splitSentences(text) {
+  return (text || '').replace(/([.!?])\s*/g, '$1\u0001').split('\u0001').filter(function(s) { return s.trim(); });
+}
+
+function turnContent(turn) {
+  var key = (turn && turn.modelAnswer) || '';
+  if (CONTENT_CACHE[key]) return CONTENT_CACHE[key];
+  var res = {};
+  SCORED_KEYS.forEach(function(k) { res[k] = []; });
+
+  /* 같은 시나리오 안에서 여러 턴에 걸쳐 나오는 말은 그 턴 고유의 내용이 아니다 */
+  var turns = (typeof state !== 'undefined' && state.scenario && state.scenario.turns) ? state.scenario.turns : [turn];
+  var df = {};
+  turns.forEach(function(t) {
+    var seen = {};
+    contentTokens(t.modelAnswer).forEach(function(w) { if (!seen[w]) { seen[w] = 1; df[w] = (df[w] || 0) + 1; } });
+  });
+  var limit = Math.max(1, Math.floor(turns.length * 0.4));
+
+  splitSentences(key).forEach(function(sent) {
+    var hits = [];
+    SCORED_KEYS.forEach(function(k) {
+      var c = cfgOf(k);
+      if (partSignals(sent, c.core, []).length || partSignals(sent, c.extra, []).length) hits.push(k);
+    });
+    if (!hits.length) return;
+    var words = [];
+    contentTokens(sent).forEach(function(w) {
+      if (w.length < 3 || CONTENT_STOP.indexOf(w) !== -1) return;
+      /* 더 짧은 조각이 이 시나리오에서 흔하면(예: ‘어머니’) 통째로 버린다 */
+      for (var L = 3; L <= w.length; L++) if ((df[w.slice(0, L)] || 0) > limit) return;
+      if (words.indexOf(w) === -1) words.push(w);
+    });
+    /* 같은 어절에서 나온 조각 중 가장 짧은 것만 남긴다 —
+       ‘찰과상으로’가 아니라 ‘찰과상’으로 두어야 ‘찰과상이라’도 걸린다 */
+    words = words.filter(function(w) {
+      return !words.some(function(o) { return o !== w && w.indexOf(o) === 0; });
+    });
+    words.sort(function(a, b) { return (df[a] || 0) - (df[b] || 0) || b.length - a.length; });
+    words = words.slice(0, 6);
+    hits.forEach(function(k) {
+      words.forEach(function(w) { if (res[k].indexOf(w) === -1) res[k].push(w); });
+    });
+  });
+  CONTENT_CACHE[key] = res;
+  return res;
 }
 
 function cfgOf(key) {
@@ -818,8 +901,9 @@ function cfgOf(key) {
 }
 
 /* 한 문장을 네 항목에 한 번씩만 배정해 분석한다. */
-function analyzeAll(text) {
+function analyzeAll(text, turn) {
   var claimed = [], res = {};
+  /* 1차 — 사전에 정의된 실제 신호부터 우선순위대로 배정 */
   SCORED_KEYS.forEach(function(k) {
     var cfg = cfgOf(k);
     var core  = partSignals(text, cfg.core,  claimed);
@@ -827,6 +911,17 @@ function analyzeAll(text) {
     res[k] = { core: core, extra: extra };
     core.concat(extra).forEach(function(s) { claimed.push(normText(s.t)); });
   });
+  /* 2차 — 그 턴의 내용어는 남은 자리에만 채운다(실제 신호를 뺏지 않도록) */
+  var cw = turn ? turnContent(turn) : null;
+  if (cw) {
+    SCORED_KEYS.forEach(function(k) {
+      var soft = partSignals(text, { softWords: cw[k] }, claimed);
+      if (soft.length) {
+        res[k].core = res[k].core.concat(soft);
+        soft.forEach(function(s) { claimed.push(normText(s.t)); });
+      }
+    });
+  }
   return res;
 }
 
@@ -834,22 +929,27 @@ function analyzeAll(text) {
    모범 답변에 없는 항목은 채점하지 않고, 없는 부가 요소는 요구하지 않는다. */
 function turnRubric(turn) {
   var model = (turn && turn.modelAnswer) || '';
-  var A = analyzeAll(model);
-  var scored = [], sum = 0;
+  var A = analyzeAll(model, turn);
+  var scored = [], sum = 0, wt = {};
   SCORED_KEYS.forEach(function(k) {
     var c = cfgOf(k), a = A[k];
-    if (sigStrength(a.core) + sigStrength(a.extra) > 0) { scored.push(c); sum += c.max; }
+    if (sigStrength(a.core) + sigStrength(a.extra) > 0) {
+      /* 모범이 핵심 없이 부가만 스친 항목은 배점을 절반으로 */
+      wt[k] = c.max * (sigStrength(a.core) > 0 ? 1 : 0.5);
+      scored.push(c); sum += wt[k];
+    }
   });
   var free = scored.length === 0;
   if (free) {
     scored = RUBRIC.filter(function(c) { return !c.penalty; });
+    scored.forEach(function(c) { wt[c.key] = c.max; });
     sum = scored.reduce(function(a, c) { return a + c.max; }, 0);
   }
   var items = scored.map(function(c) {
     var a  = A[c.key] || { core: [], extra: [] };
     var cs = free ? 0 : sigStrength(a.core);
     var es = free ? 0 : sigStrength(a.extra);
-    var m  = free ? c.max : Math.round(c.max * 100 / sum);
+    var m  = free ? c.max : Math.round(wt[c.key] * 100 / sum);
     var coreShare, extraShare;
     if (free)                { coreShare = 1;   extraShare = 0;   }
     else if (cs > 0 && es > 0) { coreShare = 0.7; extraShare = 0.3; }
@@ -923,7 +1023,7 @@ function buildFeedback(a, item) {
    ════════════════════════════════════════════════════ */
 function evaluateInput(text, turn) {
   var tr = turnRubric(turn);
-  var A  = analyzeAll(text);
+  var A  = analyzeAll(text, turn);
   var total = 0;
   if (tr.free) {
     var best = 0;
@@ -1128,7 +1228,7 @@ function showEndScreen() {
   state.turnHistory.forEach(function(h, i) {
     var tr = turnRubric(state.scenario.turns[i]);
     if (tr.free) return;   /* 요구 요소가 없는 턴은 집계에서 제외 */
-    var A = analyzeAll(h.teacherInput || '');
+    var A = analyzeAll(h.teacherInput || '', state.scenario.turns[i]);
     tr.items.forEach(function(it) {
       var e = itemEarned(A[it.key], it);
       catSum[it.key] += it.max > 0 ? Math.round(e / it.max * 100) : 0;
@@ -1171,7 +1271,7 @@ function showEndScreen() {
         /* ── 이 턴의 채점 항목만 breakdown 계산 ── */
         var tr = turnRubric(turn);
         var myText = h.teacherInput || '';
-        var A = analyzeAll(myText);
+        var A = analyzeAll(myText, turn);
         var breakdown = [];
         var lengthBonus = (myText.length >= 60) ? 5 : 0;
         if (!tr.free) {
@@ -1267,7 +1367,11 @@ function showEndScreen() {
         }
         /* 팁 */
         if (turn.tip) {
-          html += '<div style="padding:8px 14px;background:#0a1628;border-top:1px solid #334155;font-size: 14px;color:#8294a7;line-height:1.55">' + escHtml(turn.tip) + '</div>';
+          var done = sc >= 70;
+          var tipTxt = String(turn.tip).replace(/^\s*[💡\uD83D\uDCA1]\s*/, '');
+          html += '<div style="padding:8px 14px;background:#0a1628;border-top:1px solid #334155;font-size: 14px;line-height:1.55;color:' + (done ? '#86efac' : '#8294a7') + '">';
+          html += (done ? '✅ 이 턴의 학습 포인트 — 잘 지키셨습니다. ' : '💡 이 턴의 학습 포인트 — ');
+          html += escHtml(tipTxt) + '</div>';
         }
         html += '</div>';  /* /breakdown box */
         html += '</div>';  /* /turn block */

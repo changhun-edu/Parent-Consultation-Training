@@ -448,71 +448,97 @@
 const DIFFICULTY_LABEL = { 1:'⭐ 초급', 2:'⭐⭐ 중급', 3:'⭐⭐⭐ 고급' };
 
 /* ── 평가 루브릭 ───────────────────────────────────── */
-/* words    = 정확 표현(강한 신호, 가중치 1.0)
-   patterns = 어간·구조 패턴(약한 신호, 가중치 0.7)
-              ※ 패턴은 공백·문장부호를 지운 문자열에 대해 검사하므로 띄어쓰기 없이 적는다 */
+/* 각 항목을 핵심(core)과 부가(extra)로 나눈다.
+   - core  : 그 항목이 성립하기 위한 최소 요건
+   - extra : 있으면 더 좋은 요소. 모범 답변에 없으면 요구하지도, 채점하지도 않는다.
+   words = 정확 표현(가중치 1.0), patterns = [정규식, 가중치] 쌍.
+   패턴은 공백·문장부호를 지운 문자열에 대해 검사하므로 띄어쓰기 없이 적는다. */
 const RUBRIC = [
-  { key:'empathy',   label:'공감 표현', icon:'💛', max:30,
-    words:['많이','충분히','이해합니다','이해해요','걱정','마음이','속상',
-           '놀라셨겠','안타깝','힘드셨겠','당황하셨겠','그러셨겠','아쉬우셨',
-           '서운하셨겠','힘들었겠','속상하셨겠','충분히 이해','죄송'],
-    patterns:[
-      /(놀라|속상|당황|힘드|서운|답답|억울|섭섭)(셨|으셨|시)/,
-      /(셨|으셨)겠|(셨|으셨)을것같|(셨|으셨)을까/,
-      /속상|서운|답답|억울|안타깝|당황|황당|마음고생|상처/,
-      /마음(이|을|도)?(아프|무겁|쓰이|쓰였|쓰시)/,
-      /힘드[셨시]|힘들[었으]/,
-      /이해(합니다|해요|됩니다|돼요|하고|가|는|할|되)/,
-      /걱정(되|이|하|스|입|을)/,
-      /죄송|미안|사과드|송구/,
-      /그러셨|그랬군|그러시|그런마음|그마음|오죽/,
-      /얼마나|충분히|공감|헤아리/,
-      /말씀.{0,6}(알겠|이해)|무슨말씀/
-    ] },
-  { key:'solution',  label:'해결 방향', icon:'🔧', max:25,
-    words:['확인','살펴보','이야기 나누','알려드리','연락드리','방법을','조치',
-           '지도하겠','함께','노력','챙기겠','처리하겠','파악하겠','점검'],
-    patterns:[
-      /(하|되|드리|보|주|가|오|찾|맞|받)겠(습니다|어요|네요|고)/,
-      /(할|드릴|볼|줄|해볼|찾아볼|챙길|여쭤볼)게요/,
-      /(살펴|확인|파악|점검|검토|조정|개선|마련|진행|안내|협의|면담|지도|보완|대응|지원|해결)/,
-      /방법|방안|조치|계획|절차/,
-      /함께|같이|협력|도와드리|돕겠/,
-      /(해|하)(보겠|볼게요|보고|봐야)/
-    ] },
-  { key:'fact',      label:'사실 기반', icon:'📋', max:20,
-    words:['직접','확인했','상황을','당시','기록','목격','제가 보','처치','보건실'],
-    patterns:[
-      /오늘|어제|그제|지난|이번주|점심|쉬는시간|아침|방과후|하교|등교|수업중/,
-      /\d+(교시|시|분|일|명|점|번|주|개월|학년)/,
-      /교실|급식실|운동장|보건실|복도|계단|강당|체육관|도서관|특별실/,
-      /확인했|살펴봤|관찰|목격|기록|당시|상황|경위|과정|정황|사실은/,
-      /(있었|였|했|봤|들었|받았|왔)습니다|(있었|했|봤)어요/
-    ] },
-  { key:'followup',  label:'후속 약속', icon:'📅', max:15,
-    words:['연락드리겠','문자','알려드리겠','다시 연락','확인하겠습니다',
-           '살펴보겠','이번 주','금요일','내일','바로'],
-    patterns:[
-      /(연락|문자|전화|알려|공유|말씀|보고|안내)(을|를|해|해서|해|드려)?(드리겠|드릴게요|드릴|드려|주겠|하겠|할게요|드리도록)/,
-      /(오늘|내일|모레|이번주|다음주|금요일|목요일|수요일|화요일|월요일|방과후|저녁|오후|\d+(시|주|일))[^]{0,16}(연락|문자|알려|전화|공유|말씀|보고|확인)/,
-      /다시연락|따로연락|바로연락|즉시연락|추후연락|재차연락/,
-      /(결과|상황|진행)[^]{0,8}(알려|연락|공유|말씀|전해)/
-    ] },
+  { key:'empathy', label:'공감 표현', icon:'💛', max:30,
+    core: { name:'감정 인정',
+      words:['이해합니다','이해해요','충분히 이해','죄송','그러셨겠'],
+      patterns:[
+        [/(놀라|속상|당황|힘드|서운|답답|억울|섭섭)(셨|으셨|시)/, 1],
+        [/(셨|으셨)겠|(셨|으셨)을것같|(셨|으셨)을까/, 1],
+        [/이해(합니다|해요|됩니다|돼요|하고|가|는|할|되)/, 1],
+        [/죄송|미안|사과드|송구/, 1],
+        [/그러셨|그랬군|그러시|그런마음|그마음|오죽/, 0.7],
+        [/얼마나|충분히|공감|헤아리/, 0.7],
+        [/말씀.{0,6}(알겠|이해)|무슨말씀/, 0.7]
+      ] },
+    extra:{ name:'감정을 짚어 주는 표현',
+      words:['속상','걱정','마음이','안타깝'],
+      patterns:[
+        [/속상|서운|답답|억울|안타깝|당황|황당|불안|상처|마음고생/, 1],
+        [/마음(이|을|도)?(아프|무겁|쓰이|쓰였|쓰시)/, 1],
+        [/걱정(되|이|하|스|입|을)/, 1],
+        [/힘드[셨시]|힘들[었으]/, 0.7]
+      ] } },
+
+  { key:'solution', label:'해결 방향', icon:'🔧', max:25,
+    core: { name:'행동 의지',
+      words:['조치','지도하겠','챙기겠','처리하겠','함께','노력'],
+      patterns:[
+        [/(하|되|드리|보|주|가|오|찾|맞|받)겠(습니다|어요|네요|고)/, 1],
+        [/(할|드릴|볼|줄|해볼|찾아볼)게요/, 1],
+        [/(해|하)(보겠|볼게요|보고|봐야)/, 0.7],
+        [/함께|같이|협력|도와드리|돕겠/, 0.7]
+      ] },
+    extra:{ name:'구체적인 행동 계획',
+      words:['확인','살펴보','이야기 나누','방법을','점검','파악하겠'],
+      patterns:[
+        [/(살펴|확인|파악|점검|검토|조정|개선|마련|진행|안내|협의|면담|지도|보완|지원|해결|연계|배치)/, 1],
+        [/방법|방안|계획|절차/, 0.7]
+      ] } },
+
+  { key:'fact', label:'사실 기반', icon:'📋', max:20,
+    core: { name:'상황 설명',
+      words:['직접','확인했','상황을','당시','기록','목격','제가 보','처치'],
+      patterns:[
+        [/확인했|살펴봤|관찰|목격|기록|당시|상황|경위|과정|정황|사실은/, 1],
+        [/(있었|였|했|봤|들었|받았|왔|갔|뒀|졌)(습니다|어요|네요)/, 0.7]
+      ] },
+    extra:{ name:'시각·장소 등 구체적 정황',
+      words:['보건실'],
+      patterns:[
+        [/오늘|어제|그제|지난|이번주|점심|쉬는시간|아침|방과후|하교|등교|수업중/, 1],
+        [/\d+(교시|시|분|일|명|점|번|주|개월|학년)/, 1],
+        [/교실|급식실|운동장|보건실|복도|계단|강당|체육관|도서관|특별실/, 1]
+      ] } },
+
+  { key:'followup', label:'후속 약속', icon:'📅', max:15,
+    core: { name:'연락·조치 약속',
+      words:['연락드리겠','알려드리겠','다시 연락','확인하겠습니다','살펴보겠','문자'],
+      patterns:[
+        [/(연락|문자|전화|알려|공유|말씀|보고|안내)(을|를|해|해서|드려)?(드리겠|드릴게요|드릴|드려|주겠|하겠|할게요|드리도록)/, 1],
+        [/다시연락|따로연락|바로연락|즉시연락|추후연락|재차연락/, 1],
+        [/(결과|상황|진행).{0,8}(알려|연락|공유|말씀|전해)/, 1]
+      ] },
+    extra:{ name:'구체적인 시점',
+      words:['이번 주','금요일','내일'],
+      patterns:[
+        [/오늘|내일|모레|이번주|다음주|금요일|목요일|수요일|화요일|월요일|방과후|저녁|오후|오전|하교전|귀가전/, 1],
+        [/\d+(시|주|일|분|개월)(까지|안에|내로|이내)?/, 1]
+      ] } },
+
   { key:'defensive', label:'방어적 표현', icon:'⚠️', max:0, penalty:true,
     words:['규정상','원래 그런','어쩔 수 없','흔한','경미한','별거 아','그런 사실이 없',
            '아닌데요','저는 잘못이','당연히'],
     patterns:[
-      /어쩔수없|원래그런|다그런|흔한일|별일아니|큰일아니/,
-      /그런사실이없|그런적없|저는잘못|제잘못은아니|아닌데요/
+      [/어쩔수없|원래그런|다그런|흔한일|별일아니|큰일아니/, 1],
+      [/그런사실이없|그런적없|저는잘못|제잘못은아니|아닌데요/, 1]
     ] },
 ];
 
+/* 한 표현이 두 항목에서 겹쳐 계상되지 않도록, 이 순서로 먼저 배정한다. */
+const SCORED_KEYS = ['followup', 'fact', 'empathy', 'solution'];
+
 /* ── 항목 설명 테이블 (전역) ────────────────────────── */
 const RD = {
-  empathy:  { p:'학부모 감정을 먼저 인정해야 대화가 열립니다',    ok:'학부모 감정을 충분히 공감했어요!',            half:'공감 표현이 있지만 감정을 더 직접 언급하면 좋아요.',  no:'학부모 감정에 대한 공감 표현이 빠져 있습니다.',   tip:'예) "많이 놀라셨겠어요", "충분히 이해합니다", "얼마나 속상하셨을까요"' },
-  solution: { p:'교사가 무엇을 할지 보여줘야 신뢰가 생깁니다',    ok:'구체적인 해결 방향을 잘 제시했어요!',           half:'행동 계획이 있지만 더 구체적으로 설명하면 좋아요.',   no:'구체적인 행동 계획이 빠져 있습니다.',             tip:'예) "확인해 보겠습니다", "함께 방법을 찾겠습니다", "이야기 나눠보겠습니다"' },
-  fact:     { p:'상황을 객관적으로 설명해야 오해가 생기지 않습니다', ok:'사실을 명확하게 전달했어요!',               half:'사실 기반 설명이 있지만 더 구체적이면 좋아요.',       no:'당시 상황이나 경위 설명이 빠져 있습니다.',         tip:'예) "수업 중 메시지를 주고받아서", "보건실에서 처치 후", "당시 상황은..."' },
-  followup: { p:'언제·어떻게 연락할지 약속하면 불안이 줄어듭니다', ok:'명확한 후속 약속으로 신뢰를 줬어요!',          half:'약속이 있지만 구체적 시점을 추가하면 더 좋아요.',      no:'후속 연락이나 조치 약속이 빠져 있습니다.',         tip:'예) "오늘 방과 후 연락드리겠습니다", "금요일까지 문자로 알려드릴게요"' }
+  empathy:  { p:'학부모 감정을 먼저 인정해야 대화가 열립니다',    ok:'학부모 감정을 충분히 공감했어요!',            half:'공감이 담겨 있습니다.',     no:'학부모 감정에 대한 공감 표현이 보이지 않습니다.', tip:'예) "많이 놀라셨겠어요", "충분히 이해합니다", "얼마나 속상하셨을까요"' },
+  solution: { p:'교사가 무엇을 할지 보여줘야 신뢰가 생깁니다',    ok:'구체적인 해결 방향을 잘 제시했어요!',           half:'행동 의지가 담겨 있습니다.', no:'교사가 무엇을 할지가 드러나지 않습니다.',         tip:'예) "확인해 보겠습니다", "함께 방법을 찾겠습니다", "이야기 나눠보겠습니다"' },
+  fact:     { p:'상황을 객관적으로 설명해야 오해가 생기지 않습니다', ok:'사실을 명확하게 전달했어요!',               half:'사실 설명이 담겨 있습니다.', no:'당시 상황이나 경위 설명이 보이지 않습니다.',       tip:'예) "제가 직접 확인했을 때는...", "당시 상황은..."' },
+  followup: { p:'언제·어떻게 연락할지 약속하면 불안이 줄어듭니다', ok:'명확한 후속 약속으로 신뢰를 줬어요!',          half:'연락 약속이 담겨 있습니다.', no:'후속 연락이나 조치 약속이 보이지 않습니다.',       tip:'예) "확인 후 연락드리겠습니다", "문자로 알려드릴게요"' }
 };
 
 /* ── 게임 상태 ─────────────────────────────────────── */
@@ -725,72 +751,171 @@ function appendToHistory(parentMsg, teacherInput, score) {
 /* ════════════════════════════════════════════════════
    키워드 자동 평가
    ════════════════════════════════════════════════════ */
-/* 채점 전 정규화 — 공백·문장부호를 지운다.
-   '충분히 이해'와 '충분히이해'가 갈리지 않도록. */
+/* 채점 전 정규화 — 공백·문장부호를 지운다. */
+var SKIP_RE = /[\s,.!?~\-·…"'\u201c\u201d\u2018\u2019()\[\]]/;
 function normText(t) {
   return (t || '').replace(/[\s,.!?~\-·…"'\u201c\u201d\u2018\u2019()\[\]]/g, '');
 }
 
-/* 한 항목에서 잡힌 신호들.
-   정확 표현은 가중치 1.0, 어간·구조 패턴은 0.7의 부분 점수를 준다. */
-function signals(text, cfg) {
-  var nt = normText(text), out = [], seen = [];
+/* 정규화 문자열과 원문 인덱스의 대응표 — 피드백에 원문 어구를 그대로 인용하기 위해 */
+function normMap(t) {
+  t = t || '';
+  var s = '', idx = [];
+  for (var i = 0; i < t.length; i++) {
+    if (SKIP_RE.test(t[i])) continue;
+    s += t[i]; idx.push(i);
+  }
+  return { s: s, idx: idx };
+}
+
+/* 정규화 위치에 해당하는 원문 어구(앞뒤 어절 경계까지)를 잘라 온다. */
+function phraseOf(text, M, pos, len) {
+  if (pos < 0 || !M.idx.length) return '';
+  var a = M.idx[pos];
+  var b = M.idx[Math.min(M.idx.length - 1, pos + len - 1)] + 1;
+  var L = a, R = b;
+  while (L > 0 && a - L < 7 && !SKIP_RE.test(text[L - 1])) L--;
+  while (R < text.length && R - b < 9 && !SKIP_RE.test(text[R])) R++;
+  return text.slice(L, R).trim();
+}
+
+/* 한 파트(core 또는 extra)에서 잡힌 신호.
+   claimed 는 우선순위가 높은 항목이 이미 가져간 표현 — 중복 계상을 막는다. */
+function partSignals(text, part, claimed) {
+  var M = normMap(text), nt = M.s, out = [], mine = [];
   function taken(s) {
-    for (var i = 0; i < seen.length; i++) {
-      if (seen[i].indexOf(s) !== -1 || s.indexOf(seen[i]) !== -1) return true;
-    }
+    var i;
+    for (i = 0; i < claimed.length; i++)
+      if (claimed[i].indexOf(s) !== -1 || s.indexOf(claimed[i]) !== -1) return true;
+    for (i = 0; i < mine.length; i++)
+      if (mine[i].indexOf(s) !== -1 || s.indexOf(mine[i]) !== -1) return true;
     return false;
   }
-  (cfg.words || []).forEach(function(w) {
-    var nw = normText(w);
-    if (nw && nt.indexOf(nw) !== -1 && !taken(nw)) { seen.push(nw); out.push({ t: w, w: 1 }); }
+  (part.words || []).forEach(function(w) {
+    var nw = normText(w), at = nw ? nt.indexOf(nw) : -1;
+    if (at !== -1 && !taken(nw)) {
+      mine.push(nw);
+      out.push({ t: w, w: 1, ph: phraseOf(text, M, at, nw.length) });
+    }
   });
-  (cfg.patterns || []).forEach(function(p) {
-    var m = nt.match(p);
-    if (m && m[0] && !taken(m[0])) { seen.push(m[0]); out.push({ t: m[0], w: 0.7 }); }
+  (part.patterns || []).forEach(function(pr) {
+    var m = nt.match(pr[0]);
+    if (m && m[0] && !taken(m[0])) {
+      mine.push(m[0]);
+      out.push({ t: m[0], w: pr[1], ph: phraseOf(text, M, m.index, m[0].length) });
+    }
   });
   return out;
 }
 
-function strengthOf(text, cfg) {
-  return signals(text, cfg).reduce(function(a, s) { return a + s.w; }, 0);
+function sigStrength(sigs) {
+  return sigs.reduce(function(a, s) { return a + s.w; }, 0);
 }
 
-/* 만점 기준은 모범 답변이다. 모범 답변이 그 항목에서 보인 신호 세기(최대 2)를
-   기준으로 삼아, 그만큼 보이면 만점이 된다. */
-function itemEarned(text, item) {
-  var s = strengthOf(text, item);
-  return Math.min(item.max, Math.round(item.max * s / item.need));
+function cfgOf(key) {
+  for (var i = 0; i < RUBRIC.length; i++) if (RUBRIC[i].key === key) return RUBRIC[i];
+  return null;
 }
 
-/* 이 턴에서 채점할 항목을 '모범 답변'에서 뽑아낸다.
-   모범 답변에 없는 요소는 사용자에게도 요구하지 않는다. */
+/* 한 문장을 네 항목에 한 번씩만 배정해 분석한다. */
+function analyzeAll(text) {
+  var claimed = [], res = {};
+  SCORED_KEYS.forEach(function(k) {
+    var cfg = cfgOf(k);
+    var core  = partSignals(text, cfg.core,  claimed);
+    var extra = partSignals(text, cfg.extra, claimed);
+    res[k] = { core: core, extra: extra };
+    core.concat(extra).forEach(function(s) { claimed.push(normText(s.t)); });
+  });
+  return res;
+}
+
+/* 그 턴의 채점 항목과 배점을 모범 답변에서 뽑아낸다.
+   모범 답변에 없는 항목은 채점하지 않고, 없는 부가 요소는 요구하지 않는다. */
 function turnRubric(turn) {
   var model = (turn && turn.modelAnswer) || '';
-  var scored = [], penalties = [], sum = 0;
-  for (var i = 0; i < RUBRIC.length; i++) {
-    var c = RUBRIC[i];
-    if (c.penalty) { penalties.push(c); continue; }
-    if (strengthOf(model, c) > 0) { scored.push(c); sum += c.max; }
-  }
-  var free = scored.length === 0;   // 모범 답변에 뚜렷한 요소가 없는 턴
+  var A = analyzeAll(model);
+  var scored = [], sum = 0;
+  SCORED_KEYS.forEach(function(k) {
+    var c = cfgOf(k), a = A[k];
+    if (sigStrength(a.core) + sigStrength(a.extra) > 0) { scored.push(c); sum += c.max; }
+  });
+  var free = scored.length === 0;
   if (free) {
     scored = RUBRIC.filter(function(c) { return !c.penalty; });
     sum = scored.reduce(function(a, c) { return a + c.max; }, 0);
   }
   var items = scored.map(function(c) {
-    var m = free ? c.max : Math.round(c.max * 100 / sum);
-    var need = free ? 1 : Math.min(2, Math.max(1, Math.round(strengthOf(model, c))));
+    var a  = A[c.key] || { core: [], extra: [] };
+    var cs = free ? 0 : sigStrength(a.core);
+    var es = free ? 0 : sigStrength(a.extra);
+    var m  = free ? c.max : Math.round(c.max * 100 / sum);
+    var coreShare, extraShare;
+    if (free)                { coreShare = 1;   extraShare = 0;   }
+    else if (cs > 0 && es > 0) { coreShare = 0.7; extraShare = 0.3; }
+    else if (cs > 0)          { coreShare = 1;   extraShare = 0;   }
+    else                      { coreShare = 0;   extraShare = 1;   }
     return { key: c.key, label: c.label, icon: c.icon,
-             words: c.words, patterns: c.patterns, max: m, need: need };
+             coreName: c.core.name, extraName: c.extra.name,
+             max: m, coreShare: coreShare, extraShare: extraShare,
+             coreNeed: 1,
+             modelCore: a.core, modelExtra: a.extra };
   });
-  if (!free && items.length) {   // 반올림 오차 보정
+  if (!free && items.length) {
     var t = items.reduce(function(a, x) { return a + x.max; }, 0);
     items[0].max += 100 - t;
   }
   var keys = items.map(function(x) { return x.key; });
   var skipped = RUBRIC.filter(function(c) { return !c.penalty && keys.indexOf(c.key) === -1; });
-  return { items: items, penalties: penalties, free: free, skipped: skipped };
+  return { items: items, penalties: RUBRIC.filter(function(c) { return c.penalty; }),
+           free: free, skipped: skipped };
+}
+
+/* 항목 점수 = 핵심(기본 70%) + 부가(30%).
+   모범 답변에 부가 요소가 없으면 핵심만으로 100%가 된다. */
+function itemEarned(a, item) {
+  var cr = item.coreShare  > 0 ? Math.min(1, sigStrength(a.core) / item.coreNeed) : 0;
+  var er = item.extraShare > 0 ? (sigStrength(a.extra) > 0 ? 1 : 0) : 0;
+  return Math.min(item.max, Math.round(item.max * (item.coreShare * cr + item.extraShare * er)));
+}
+
+/* 피드백 문장을 모범 답변에서 만든다 — 모범이 하지 않은 것은 요구하지 않는다. */
+function buildFeedback(a, item) {
+  var d = RD[item.key] || {};
+  var mineN = a.core.concat(a.extra).map(function(s) { return normText(s.t); });
+  function covered(t) {
+    var n = normText(t);
+    for (var i = 0; i < mineN.length; i++)
+      if (mineN[i].indexOf(n) !== -1 || n.indexOf(mineN[i]) !== -1) return true;
+    return false;
+  }
+  function quote(sigs) {
+    var seen = [], out = [];
+    sigs.forEach(function(s) {
+      var v = s.ph || s.t;
+      if (out.length < 3 && seen.indexOf(v) === -1) { seen.push(v); out.push('\u201c' + v + '\u201d'); }
+    });
+    return out.join(', ');
+  }
+  var haveCore  = sigStrength(a.core)  > 0;
+  var haveExtra = sigStrength(a.extra) > 0;
+  var missCore  = item.modelCore.filter(function(s) { return !covered(s.t); });
+  var out = [];
+
+  if (item.coreShare > 0 && !haveCore) {
+    out.push(d.no || '');
+    if (haveExtra) out.push(item.extraName + '은 들어 있습니다.');
+    if (item.modelCore.length) out.push('모범 답변에는 ' + quote(item.modelCore) + ' 같은 표현이 있습니다.');
+  } else if (item.extraShare > 0 && !haveExtra) {
+    out.push(item.extraName + '을 덧붙이면 더 좋습니다.');
+    out.push('모범 답변에는 ' + quote(item.modelExtra) + ' 같은 표현이 있습니다.');
+  } else if (missCore.length && sigStrength(a.core) < item.coreNeed) {
+    out.push(d.half || '');
+    out.push('모범 답변에는 ' + quote(missCore) + ' 같은 표현이 더 있습니다.');
+  } else {
+    out.push(d.ok || '');
+  }
+  return out;
 }
 
 /* ════════════════════════════════════════════════════
@@ -798,21 +923,20 @@ function turnRubric(turn) {
    ════════════════════════════════════════════════════ */
 function evaluateInput(text, turn) {
   var tr = turnRubric(turn);
+  var A  = analyzeAll(text);
   var total = 0;
   if (tr.free) {
-    /* 모범 답변에도 네 요소가 없는 턴(주로 확인·마무리 발화)은
-       기본 75점에서 시작해, 요소를 챙긴 만큼 더한다. */
     var best = 0;
     tr.items.forEach(function(it) {
-      var r = it.max > 0 ? itemEarned(text, it) / it.max : 0;
+      var r = it.max > 0 ? itemEarned(A[it.key], it) / it.max : 0;
       if (r > best) best = r;
     });
     total = 75 + Math.round(best * 25);
   } else {
-    tr.items.forEach(function(it) { total += itemEarned(text, it); });
+    tr.items.forEach(function(it) { total += itemEarned(A[it.key], it); });
   }
   tr.penalties.forEach(function(c) {
-    total -= Math.min(45, signals(text, c).length * 15);
+    total -= Math.min(45, partSignals(text, c, []).length * 15);
   });
   if (text.length < 20) total = Math.floor(total * 0.6);
   if (text.length >= 60) total += 5;
@@ -1004,8 +1128,9 @@ function showEndScreen() {
   state.turnHistory.forEach(function(h, i) {
     var tr = turnRubric(state.scenario.turns[i]);
     if (tr.free) return;   /* 요구 요소가 없는 턴은 집계에서 제외 */
+    var A = analyzeAll(h.teacherInput || '');
     tr.items.forEach(function(it) {
-      var e = itemEarned(h.teacherInput || '', it);
+      var e = itemEarned(A[it.key], it);
       catSum[it.key] += it.max > 0 ? Math.round(e / it.max * 100) : 0;
       catN[it.key]   += 1;
       if (e > 0) catHits[it.key].push(i + 1);
@@ -1046,22 +1171,23 @@ function showEndScreen() {
         /* ── 이 턴의 채점 항목만 breakdown 계산 ── */
         var tr = turnRubric(turn);
         var myText = h.teacherInput || '';
+        var A = analyzeAll(myText);
         var breakdown = [];
         var lengthBonus = (myText.length >= 60) ? 5 : 0;
         if (!tr.free) {
           tr.items.forEach(function(it) {
-            var sg = signals(myText, it);
+            var a = A[it.key], sg = a.core.concat(a.extra);
             breakdown.push({ key: it.key, label: it.label, icon: it.icon,
-              max: it.max, earned: itemEarned(myText, it),
+              max: it.max, earned: itemEarned(a, it),
               hitWords: sg.slice(0,4).map(function(s) { return (s.w < 1 ? '≈ ' : '') + s.t; }),
-              penalty: false });
+              msgs: buildFeedback(a, it), penalty: false });
           });
         }
         tr.penalties.forEach(function(cfg) {
-          var sg = signals(myText, cfg);
+          var sg = partSignals(myText, cfg, []);
           breakdown.push({ key: cfg.key, label: cfg.label, icon: cfg.icon,
             max: 0, earned: -Math.min(45, sg.length * 15),
-            hitWords: sg.slice(0,4).map(function(s) { return s.t; }), penalty: true });
+            hitWords: sg.slice(0,4).map(function(s) { return s.t; }), msgs: [], penalty: true });
         });
 
         var html = '<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border2)">';
@@ -1093,7 +1219,7 @@ function showEndScreen() {
           var ratio = c.max > 0 ? c.earned / c.max : 0;
           var col  = ratio >= 1 ? '#22c55e' : ratio > 0 ? '#f59e0b' : '#ef4444';
           var sIcon = ratio >= 1 ? '✅' : ratio > 0 ? '🟡' : '❌';
-          var msg  = ratio >= 1 ? d.ok : ratio > 0 ? d.half : d.no;
+          var msgs = c.msgs && c.msgs.length ? c.msgs : [ratio >= 1 ? d.ok : ratio > 0 ? d.half : d.no];
           var bg   = ratio >= 1 ? 'rgba(34,197,94,.05)' : ratio > 0 ? 'rgba(245,158,11,.05)' : 'rgba(239,68,68,.05)';
           html += '<div style="padding:10px 14px;background:' + bg + ';border-bottom:1px solid #1e293b">';
           html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">';
@@ -1109,8 +1235,10 @@ function showEndScreen() {
             html += '</div>';
           }
           html += '<div style="font-size: 14px;padding:6px 10px;border-radius:6px;border-left:3px solid ' + col + ';background:' + col + '11;line-height:1.6">';
-          html += '<span style="color:' + col + ';font-weight:600">' + escHtml(msg) + '</span>';
-          if (ratio < 1) html += '<div style="color:#94a3b8;margin-top:2px">' + escHtml(d.tip) + '</div>';
+          html += '<span style="color:' + col + ';font-weight:600">' + escHtml(msgs[0] || '') + '</span>';
+          for (var mi = 1; mi < msgs.length; mi++) {
+            html += '<div style="color:#94a3b8;margin-top:2px">' + escHtml(msgs[mi]) + '</div>';
+          }
           html += '</div></div>';
         }
         /* 이번 턴 채점 제외 항목 */

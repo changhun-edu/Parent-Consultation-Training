@@ -448,22 +448,63 @@
 const DIFFICULTY_LABEL = { 1:'⭐ 초급', 2:'⭐⭐ 중급', 3:'⭐⭐⭐ 고급' };
 
 /* ── 평가 루브릭 ───────────────────────────────────── */
+/* words    = 정확 표현(강한 신호, 가중치 1.0)
+   patterns = 어간·구조 패턴(약한 신호, 가중치 0.7)
+              ※ 패턴은 공백·문장부호를 지운 문자열에 대해 검사하므로 띄어쓰기 없이 적는다 */
 const RUBRIC = [
-  { key:'empathy',   label:'공감 표현', icon:'💛', max:30, perHit:12,
+  { key:'empathy',   label:'공감 표현', icon:'💛', max:30,
     words:['많이','충분히','이해합니다','이해해요','걱정','마음이','속상',
            '놀라셨겠','안타깝','힘드셨겠','당황하셨겠','그러셨겠','아쉬우셨',
-           '서운하셨겠','힘들었겠','속상하셨겠','충분히 이해','죄송'] },
-  { key:'solution',  label:'해결 방향', icon:'🔧', max:25, perHit:9,
+           '서운하셨겠','힘들었겠','속상하셨겠','충분히 이해','죄송'],
+    patterns:[
+      /(놀라|속상|당황|힘드|서운|답답|억울|섭섭)(셨|으셨|시)/,
+      /(셨|으셨)겠|(셨|으셨)을것같|(셨|으셨)을까/,
+      /속상|서운|답답|억울|안타깝|당황|황당|마음고생|상처/,
+      /마음(이|을|도)?(아프|무겁|쓰이|쓰였|쓰시)/,
+      /힘드[셨시]|힘들[었으]/,
+      /이해(합니다|해요|됩니다|돼요|하고|가|는|할|되)/,
+      /걱정(되|이|하|스|입|을)/,
+      /죄송|미안|사과드|송구/,
+      /그러셨|그랬군|그러시|그런마음|그마음|오죽/,
+      /얼마나|충분히|공감|헤아리/,
+      /말씀.{0,6}(알겠|이해)|무슨말씀/
+    ] },
+  { key:'solution',  label:'해결 방향', icon:'🔧', max:25,
     words:['확인','살펴보','이야기 나누','알려드리','연락드리','방법을','조치',
-           '지도하겠','함께','노력','챙기겠','처리하겠','파악하겠','점검'] },
-  { key:'fact',      label:'사실 기반', icon:'📋', max:20, perHit:8,
-    words:['직접','확인했','상황을','당시','기록','목격','제가 보','처치','보건실'] },
-  { key:'followup',  label:'후속 약속', icon:'📅', max:15, perHit:9,
+           '지도하겠','함께','노력','챙기겠','처리하겠','파악하겠','점검'],
+    patterns:[
+      /(하|되|드리|보|주|가|오|찾|맞|받)겠(습니다|어요|네요|고)/,
+      /(할|드릴|볼|줄|해볼|찾아볼|챙길|여쭤볼)게요/,
+      /(살펴|확인|파악|점검|검토|조정|개선|마련|진행|안내|협의|면담|지도|보완|대응|지원|해결)/,
+      /방법|방안|조치|계획|절차/,
+      /함께|같이|협력|도와드리|돕겠/,
+      /(해|하)(보겠|볼게요|보고|봐야)/
+    ] },
+  { key:'fact',      label:'사실 기반', icon:'📋', max:20,
+    words:['직접','확인했','상황을','당시','기록','목격','제가 보','처치','보건실'],
+    patterns:[
+      /오늘|어제|그제|지난|이번주|점심|쉬는시간|아침|방과후|하교|등교|수업중/,
+      /\d+(교시|시|분|일|명|점|번|주|개월|학년)/,
+      /교실|급식실|운동장|보건실|복도|계단|강당|체육관|도서관|특별실/,
+      /확인했|살펴봤|관찰|목격|기록|당시|상황|경위|과정|정황|사실은/,
+      /(있었|였|했|봤|들었|받았|왔)습니다|(있었|했|봤)어요/
+    ] },
+  { key:'followup',  label:'후속 약속', icon:'📅', max:15,
     words:['연락드리겠','문자','알려드리겠','다시 연락','확인하겠습니다',
-           '살펴보겠','이번 주','금요일','내일','바로'] },
-  { key:'defensive', label:'방어적 표현', icon:'⚠️', max:0, perHit:-15, penalty:true,
+           '살펴보겠','이번 주','금요일','내일','바로'],
+    patterns:[
+      /(연락|문자|전화|알려|공유|말씀|보고|안내)(을|를|해|해서|해|드려)?(드리겠|드릴게요|드릴|드려|주겠|하겠|할게요|드리도록)/,
+      /(오늘|내일|모레|이번주|다음주|금요일|목요일|수요일|화요일|월요일|방과후|저녁|오후|\d+(시|주|일))[^]{0,16}(연락|문자|알려|전화|공유|말씀|보고|확인)/,
+      /다시연락|따로연락|바로연락|즉시연락|추후연락|재차연락/,
+      /(결과|상황|진행)[^]{0,8}(알려|연락|공유|말씀|전해)/
+    ] },
+  { key:'defensive', label:'방어적 표현', icon:'⚠️', max:0, penalty:true,
     words:['규정상','원래 그런','어쩔 수 없','흔한','경미한','별거 아','그런 사실이 없',
-           '아닌데요','저는 잘못이','당연히'] },
+           '아닌데요','저는 잘못이','당연히'],
+    patterns:[
+      /어쩔수없|원래그런|다그런|흔한일|별일아니|큰일아니/,
+      /그런사실이없|그런적없|저는잘못|제잘못은아니|아닌데요/
+    ] },
 ];
 
 /* ── 항목 설명 테이블 (전역) ────────────────────────── */
@@ -684,17 +725,42 @@ function appendToHistory(parentMsg, teacherInput, score) {
 /* ════════════════════════════════════════════════════
    키워드 자동 평가
    ════════════════════════════════════════════════════ */
-function hitWords(text, words) {
-  var out = [];
-  for (var i = 0; i < words.length; i++) if (text.indexOf(words[i]) !== -1) out.push(words[i]);
+/* 채점 전 정규화 — 공백·문장부호를 지운다.
+   '충분히 이해'와 '충분히이해'가 갈리지 않도록. */
+function normText(t) {
+  return (t || '').replace(/[\s,.!?~\-·…"'\u201c\u201d\u2018\u2019()\[\]]/g, '');
+}
+
+/* 한 항목에서 잡힌 신호들.
+   정확 표현은 가중치 1.0, 어간·구조 패턴은 0.7의 부분 점수를 준다. */
+function signals(text, cfg) {
+  var nt = normText(text), out = [], seen = [];
+  function taken(s) {
+    for (var i = 0; i < seen.length; i++) {
+      if (seen[i].indexOf(s) !== -1 || s.indexOf(seen[i]) !== -1) return true;
+    }
+    return false;
+  }
+  (cfg.words || []).forEach(function(w) {
+    var nw = normText(w);
+    if (nw && nt.indexOf(nw) !== -1 && !taken(nw)) { seen.push(nw); out.push({ t: w, w: 1 }); }
+  });
+  (cfg.patterns || []).forEach(function(p) {
+    var m = nt.match(p);
+    if (m && m[0] && !taken(m[0])) { seen.push(m[0]); out.push({ t: m[0], w: 0.7 }); }
+  });
   return out;
 }
 
-/* 만점 기준은 모범 답변이다. 모범 답변이 그 항목에서 쓴 표현 수(최대 3)를
-   기준으로 삼아, 같은 수만큼 쓰면 만점이 된다. */
+function strengthOf(text, cfg) {
+  return signals(text, cfg).reduce(function(a, s) { return a + s.w; }, 0);
+}
+
+/* 만점 기준은 모범 답변이다. 모범 답변이 그 항목에서 보인 신호 세기(최대 2)를
+   기준으로 삼아, 그만큼 보이면 만점이 된다. */
 function itemEarned(text, item) {
-  var n = hitWords(text, item.words).length;
-  return Math.min(item.max, Math.round(item.max * n / item.need));
+  var s = strengthOf(text, item);
+  return Math.min(item.max, Math.round(item.max * s / item.need));
 }
 
 /* 이 턴에서 채점할 항목을 '모범 답변'에서 뽑아낸다.
@@ -705,7 +771,7 @@ function turnRubric(turn) {
   for (var i = 0; i < RUBRIC.length; i++) {
     var c = RUBRIC[i];
     if (c.penalty) { penalties.push(c); continue; }
-    if (hitWords(model, c.words).length > 0) { scored.push(c); sum += c.max; }
+    if (strengthOf(model, c) > 0) { scored.push(c); sum += c.max; }
   }
   var free = scored.length === 0;   // 모범 답변에 뚜렷한 요소가 없는 턴
   if (free) {
@@ -714,9 +780,9 @@ function turnRubric(turn) {
   }
   var items = scored.map(function(c) {
     var m = free ? c.max : Math.round(c.max * 100 / sum);
-    var need = free ? 1 : Math.min(3, Math.max(1, hitWords(model, c.words).length));
-    return { key: c.key, label: c.label, icon: c.icon, words: c.words,
-             max: m, need: need };
+    var need = free ? 1 : Math.min(2, Math.max(1, Math.round(strengthOf(model, c))));
+    return { key: c.key, label: c.label, icon: c.icon,
+             words: c.words, patterns: c.patterns, max: m, need: need };
   });
   if (!free && items.length) {   // 반올림 오차 보정
     var t = items.reduce(function(a, x) { return a + x.max; }, 0);
@@ -746,7 +812,7 @@ function evaluateInput(text, turn) {
     tr.items.forEach(function(it) { total += itemEarned(text, it); });
   }
   tr.penalties.forEach(function(c) {
-    total -= Math.min(45, hitWords(text, c.words).length * Math.abs(c.perHit));
+    total -= Math.min(45, signals(text, c).length * 15);
   });
   if (text.length < 20) total = Math.floor(total * 0.6);
   if (text.length >= 60) total += 5;
@@ -779,24 +845,6 @@ function requestEval() {
 /* ════════════════════════════════════════════════════
    전체 평가 화면
    ════════════════════════════════════════════════════ */
-/* ════════════════════════════════════════════════════
-   항목별 점수 계산 (0-100%)
-   ════════════════════════════════════════════════════ */
-function evaluateCategories(text) {
-  var result = { empathy: 0, solution: 0, fact: 0, followup: 0 };
-  for (var i = 0; i < RUBRIC.length; i++) {
-    var cfg = RUBRIC[i];
-    if (cfg.penalty) continue;
-    var hits = 0;
-    for (var j = 0; j < cfg.words.length; j++) {
-      if (text.includes(cfg.words[j])) hits++;
-    }
-    var earned = Math.min(cfg.max, hits * cfg.perHit);
-    result[cfg.key] = cfg.max > 0 ? Math.round((earned / cfg.max) * 100) : 0;
-  }
-  return result;
-}
-
 /* ════════════════════════════════════════════════════
    레이더 차트 (SVG)
    ════════════════════════════════════════════════════ */
@@ -1002,16 +1050,18 @@ function showEndScreen() {
         var lengthBonus = (myText.length >= 60) ? 5 : 0;
         if (!tr.free) {
           tr.items.forEach(function(it) {
+            var sg = signals(myText, it);
             breakdown.push({ key: it.key, label: it.label, icon: it.icon,
               max: it.max, earned: itemEarned(myText, it),
-              hitWords: hitWords(myText, it.words).slice(0,4), penalty: false });
+              hitWords: sg.slice(0,4).map(function(s) { return (s.w < 1 ? '≈ ' : '') + s.t; }),
+              penalty: false });
           });
         }
         tr.penalties.forEach(function(cfg) {
-          var hw = hitWords(myText, cfg.words);
+          var sg = signals(myText, cfg);
           breakdown.push({ key: cfg.key, label: cfg.label, icon: cfg.icon,
-            max: 0, earned: -Math.min(45, hw.length * 15),
-            hitWords: hw.slice(0,4), penalty: true });
+            max: 0, earned: -Math.min(45, sg.length * 15),
+            hitWords: sg.slice(0,4).map(function(s) { return s.t; }), penalty: true });
         });
 
         var html = '<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border2)">';

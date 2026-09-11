@@ -6,7 +6,24 @@
   <title>학부모 상담 훈련</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    body { background: #0f172a; }
+    :root {
+      --bg:      #0f172a;
+      --bg2:     #1e293b;
+      --bg3:     #0d1526;
+      --border:  rgba(51,65,85,.55);
+      --border2: rgba(51,65,85,.35);
+      --txt:     #e2e8f0;
+      --txt2:    #94a3b8;
+      --txt3:    #8294a7;
+      --blue:    #60a5fa;
+      --indigo:  #818cf8;
+      --green:   #4ade80;
+      --yellow:  #fbbf24;
+      --red:     #f87171;
+      --radius:    14px;
+      --radius-sm: 9px;
+    }
+    body { background: #0f172a; color: var(--txt); }
 
     /* ── 헤더 ──────────────────────────────────── */
     .training-header {
@@ -202,10 +219,15 @@
       border-radius: var(--radius); margin-bottom: 14px; text-align: center;
     }
     .end-emoji   { font-size: 48px; margin-bottom: 6px; display: block; }
-    .end-score   { font-size: 62px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+    .end-score   {
+      font-size: 62px; font-weight: 900; line-height: 1; margin-bottom: 6px;
+      color: #4ade80; letter-spacing: -.02em;
+      text-shadow: 0 2px 10px rgba(0,0,0,.45);
+    }
     .end-label-badge {
-      display: inline-block; padding: 4px 14px; border-radius: 12px; border: 1px solid;
+      display: inline-block; padding: 5px 16px; border-radius: 12px; border: 1px solid;
       font-size: 15px; font-weight: 700; margin-bottom: 14px;
+      color: #4ade80; background: rgba(74,222,128,.16); border-color: rgba(74,222,128,.55);
     }
     .end-summary { font-size: 16px; color: #cbd5e1; line-height: 1.7; }
     .end-turn-chart {
@@ -500,6 +522,8 @@ const RUBRIC = [
       words:['직접','확인했','상황을','당시','기록','목격','제가 보','처치'],
       patterns:[
         [/확인했|살펴봤|관찰|목격|기록|당시|상황|경위|과정|정황|사실은/, 1],
+        [/알고있|알고계|파악하고있|숙지|인지하고|확인하고있|기억하고있|보고있습니다/, 1],
+        [/이미알|미리알|들어서알|전달받/, 0.7],
         [/(있었|였|했|봤|들었|받았|왔|갔|뒀|졌)(습니다|어요|네요)/, 0.7]
       ] },
     extra:{ name:'시각·장소 등 구체적 정황',
@@ -530,7 +554,8 @@ const RUBRIC = [
            '아닌데요','저는 잘못이','당연히'],
     patterns:[
       [/어쩔수없|원래그런|다그런|흔한일|별일아니|큰일아니/, 1],
-      [/그런사실이없|그런적없|저는잘못|제잘못은아니|아닌데요/, 1]
+      [/그런사실이없|그런적없|저는잘못|제잘못은아니|아닌데요/, 1],
+      [/드릴수없|해드릴수없|알아서하|알아서가|알아서보|불가능합|안됩니다/, 1]
     ] },
 ];
 
@@ -854,8 +879,8 @@ function splitSentences(text) {
 function turnContent(turn) {
   var key = (turn && turn.modelAnswer) || '';
   if (CONTENT_CACHE[key]) return CONTENT_CACHE[key];
-  var res = {};
-  SCORED_KEYS.forEach(function(k) { res[k] = []; });
+  var res = { words: {}, sents: {} };
+  SCORED_KEYS.forEach(function(k) { res.words[k] = []; res.sents[k] = []; });
 
   /* 같은 시나리오 안에서 여러 턴에 걸쳐 나오는 말은 그 턴 고유의 내용이 아니다 */
   var turns = (typeof state !== 'undefined' && state.scenario && state.scenario.turns) ? state.scenario.turns : [turn];
@@ -888,11 +913,51 @@ function turnContent(turn) {
     words.sort(function(a, b) { return (df[a] || 0) - (df[b] || 0) || b.length - a.length; });
     words = words.slice(0, 6);
     hits.forEach(function(k) {
-      words.forEach(function(w) { if (res[k].indexOf(w) === -1) res[k].push(w); });
+      res.sents[k].push(sent);
+      words.forEach(function(w) { if (res.words[k].indexOf(w) === -1) res.words[k].push(w); });
     });
   });
   CONTENT_CACHE[key] = res;
   return res;
+}
+
+/* ── 모범 답변과 겹치는 표현 ────────────────────────
+   낱말 사전이 못 잡아도, 모범 답변과 연속으로 길게 겹치면 같은 말을 한 것이다. */
+function longestCommon(a, b) {
+  if (!a || !b) return '';
+  var prev = new Array(b.length + 1).fill(0), cur, bestLen = 0, bestEnd = 0;
+  for (var i = 1; i <= a.length; i++) {
+    cur = new Array(b.length + 1).fill(0);
+    for (var j = 1; j <= b.length; j++) {
+      if (a[i - 1] === b[j - 1]) {
+        cur[j] = prev[j - 1] + 1;
+        if (cur[j] > bestLen) { bestLen = cur[j]; bestEnd = i; }
+      }
+    }
+    prev = cur;
+  }
+  return bestLen ? a.slice(bestEnd - bestLen, bestEnd) : '';
+}
+
+/* 조사·어미 덩어리만 겹친 것은 같은 말을 한 것이 아니다 */
+function contentPart(s) {
+  return s
+    .replace(/(습니다|입니다|합니다|해요|어요|으면|시면|하고|해서|지만|는데|에서|에게|으로|께서|하며|이며)+$/, '')
+    .replace(/^(습니다|입니다|니다|시면|으면|하고|해서|지만|는데|에서|에게|으로|께서|그리고|그런데|그래서)/, '');
+}
+
+function overlapSignals(text, sents, claimed) {
+  var nt = normText(text), best = '';
+  (sents || []).forEach(function(s) {
+    var lcs = longestCommon(nt, normText(s));
+    if (lcs.length > best.length) best = lcs;
+  });
+  if (best.length < 4 || contentPart(best).length < 3) return [];
+  for (var i = 0; i < claimed.length; i++) {
+    if (claimed[i].indexOf(best) !== -1 || best.indexOf(claimed[i]) !== -1) return [];
+  }
+  var w = best.length >= 8 ? 0.8 : best.length >= 6 ? 0.6 : 0.4;
+  return [{ t: best, w: w, ph: best }];
 }
 
 function cfgOf(key) {
@@ -901,7 +966,8 @@ function cfgOf(key) {
 }
 
 /* 한 문장을 네 항목에 한 번씩만 배정해 분석한다. */
-function analyzeAll(text, turn) {
+function analyzeAll(text, turn, opts) {
+  var useOverlap = !(opts && opts.overlap === false);
   var claimed = [], res = {};
   /* 1차 — 사전에 정의된 실제 신호부터 우선순위대로 배정 */
   SCORED_KEYS.forEach(function(k) {
@@ -915,12 +981,22 @@ function analyzeAll(text, turn) {
   var cw = turn ? turnContent(turn) : null;
   if (cw) {
     SCORED_KEYS.forEach(function(k) {
-      var soft = partSignals(text, { softWords: cw[k] }, claimed);
+      var soft = partSignals(text, { softWords: cw.words[k] }, claimed);
       if (soft.length) {
         res[k].core = res[k].core.concat(soft);
         soft.forEach(function(s) { claimed.push(normText(s.t)); });
       }
     });
+    /* 3차 — 모범 답변 문장과 길게 겹치는 표현 */
+    if (useOverlap) {
+      SCORED_KEYS.forEach(function(k) {
+        var ov = overlapSignals(text, cw.sents[k], claimed);
+        if (ov.length) {
+          res[k].core = res[k].core.concat(ov);
+          ov.forEach(function(s) { claimed.push(s.t); });
+        }
+      });
+    }
   }
   return res;
 }
@@ -929,7 +1005,7 @@ function analyzeAll(text, turn) {
    모범 답변에 없는 항목은 채점하지 않고, 없는 부가 요소는 요구하지 않는다. */
 function turnRubric(turn) {
   var model = (turn && turn.modelAnswer) || '';
-  var A = analyzeAll(model, turn);
+  var A = analyzeAll(model, turn, { overlap: false });
   var scored = [], sum = 0, wt = {};
   SCORED_KEYS.forEach(function(k) {
     var c = cfgOf(k), a = A[k];
@@ -964,19 +1040,43 @@ function turnRubric(turn) {
   if (!free && items.length) {
     var t = items.reduce(function(a, x) { return a + x.max; }, 0);
     items[0].max += 100 - t;
+    /* 한 항목이 총점의 절반 가까이를 좌우하지 않도록 상한을 둔다 */
+    var CAP = 40;
+    for (var pass = 0; pass < 3; pass++) {
+      var excess = 0;
+      items.forEach(function(it) { if (it.max > CAP) { excess += it.max - CAP; it.max = CAP; } });
+      if (!excess) break;
+      var room = items.reduce(function(a, it) { return a + Math.max(0, CAP - it.max); }, 0);
+      if (!room) break;
+      var give = items.map(function(it) { return Math.round(excess * Math.max(0, CAP - it.max) / room); });
+      items.forEach(function(it, i) { it.max += give[i]; });
+    }
   }
+  /* 배점 상한 때문에 남은 몫 — 성의 있는 답변에 기본으로 준다 */
+  var base = free ? 0 : Math.max(0, 100 - items.reduce(function(a, x) { return a + x.max; }, 0));
   var keys = items.map(function(x) { return x.key; });
   var skipped = RUBRIC.filter(function(c) { return !c.penalty && keys.indexOf(c.key) === -1; });
   return { items: items, penalties: RUBRIC.filter(function(c) { return c.penalty; }),
-           free: free, skipped: skipped };
+           free: free, skipped: skipped, base: base };
 }
 
 /* 항목 점수 = 핵심(기본 70%) + 부가(30%).
    모범 답변에 부가 요소가 없으면 핵심만으로 100%가 된다. */
-function itemEarned(a, item) {
+/* 성의 있게 쓴 답변이면(20자 이상, 방어적 표현 없음) 사전이 못 잡아도 최소 20%는 준다.
+   못 잡은 것은 사용자 잘못이 아니라 사전의 한계이기 때문. */
+function floorRatioFor(text) {
+  if (!text || text.length < 20) return 0;
+  var pen = RUBRIC.filter(function(c) { return c.penalty; });
+  for (var i = 0; i < pen.length; i++) if (partSignals(text, pen[i], []).length) return 0;
+  return 0.2;
+}
+
+function itemEarned(a, item, floorRatio) {
   var cr = item.coreShare  > 0 ? Math.min(1, sigStrength(a.core) / item.coreNeed) : 0;
   var er = item.extraShare > 0 ? (sigStrength(a.extra) > 0 ? 1 : 0) : 0;
-  return Math.min(item.max, Math.round(item.max * (item.coreShare * cr + item.extraShare * er)));
+  var ratio = item.coreShare * cr + item.extraShare * er;
+  if (floorRatio && ratio < floorRatio) ratio = floorRatio;
+  return Math.min(item.max, Math.round(item.max * ratio));
 }
 
 /* 피드백 문장을 모범 답변에서 만든다 — 모범이 하지 않은 것은 요구하지 않는다. */
@@ -1003,7 +1103,7 @@ function buildFeedback(a, item) {
   var out = [];
 
   if (item.coreShare > 0 && !haveCore) {
-    out.push(d.no || '');
+    out.push(item.coreName + '에 해당하는 표현이 보이지 않습니다.');
     if (haveExtra) out.push(item.extraName + '은 들어 있습니다.');
     if (item.modelCore.length) out.push('모범 답변에는 ' + quote(item.modelCore) + ' 같은 표현이 있습니다.');
   } else if (item.extraShare > 0 && !haveExtra) {
@@ -1024,22 +1124,30 @@ function buildFeedback(a, item) {
 function evaluateInput(text, turn) {
   var tr = turnRubric(turn);
   var A  = analyzeAll(text, turn);
+  var fl = floorRatioFor(text);
   var total = 0;
   if (tr.free) {
     var best = 0;
     tr.items.forEach(function(it) {
-      var r = it.max > 0 ? itemEarned(A[it.key], it) / it.max : 0;
+      var r = it.max > 0 ? itemEarned(A[it.key], it, fl) / it.max : 0;
       if (r > best) best = r;
     });
     total = 75 + Math.round(best * 25);
   } else {
-    tr.items.forEach(function(it) { total += itemEarned(A[it.key], it); });
+    var got = 0, cap = 0;
+    tr.items.forEach(function(it) { got += itemEarned(A[it.key], it, fl); cap += it.max; });
+    /* 배점 상한으로 남은 몫은 공짜가 아니라 해낸 만큼 비례해서 준다 */
+    total = got + (cap ? Math.round(tr.base * got / cap) : 0);
   }
   tr.penalties.forEach(function(c) {
     total -= Math.min(45, partSignals(text, c, []).length * 15);
   });
   if (text.length < 20) total = Math.floor(total * 0.6);
   if (text.length >= 60) total += 5;
+  /* 모범 답변보다 크게 짧으면 만점까지 올리지는 않는다 */
+  var ml = ((turn && turn.modelAnswer) || '').length;
+  if (ml && text.length < ml * 0.3)      total = Math.min(total, 75);
+  else if (ml && text.length < ml * 0.5) total = Math.min(total, 90);
   return Math.max(0, Math.min(100, total));
 }
 
@@ -1199,27 +1307,25 @@ function showEndScreen() {
     ? Math.round(state.allScores.reduce((a, b) => a + b, 0) / state.allScores.length)
     : 0;
 
-  const tColor = avg >= 80 ? 'var(--green)' : avg >= 60 ? 'var(--blue)' : avg >= 40 ? 'var(--yellow)' : 'var(--red)';
-  const tHex   = avg >= 80 ? '#22c55e'  : avg >= 60 ? '#3b82f6'  : avg >= 40 ? '#f59e0b'  : '#ef4444';
-  const tEmoji = avg >= 80 ? '🌟' : avg >= 60 ? '👍' : avg >= 40 ? '📚' : '💪';
-  const tLabel = avg >= 80 ? '탁월한 상담' : avg >= 60 ? '양호한 상담' : avg >= 40 ? '개선 필요' : '성장 중';
+  /* 어두운 배경 위에서 읽히도록 400 계열의 밝은 색을 쓴다 */
+  const tier =
+    avg >= 80 ? { text:'#4ade80', rgb:'74,222,128',  emoji:'🌟', label:'탁월한 상담' } :
+    avg >= 60 ? { text:'#7dd3fc', rgb:'125,211,252', emoji:'👍', label:'양호한 상담' } :
+    avg >= 40 ? { text:'#fbbf24', rgb:'251,191,36',  emoji:'📚', label:'개선 필요' } :
+                { text:'#fca5a5', rgb:'252,165,165', emoji:'💪', label:'성장 중' };
+  const tHex   = tier.text;
+  const tLabel = tier.label;
 
-  setText('end-emoji',   tEmoji);
+  setText('end-emoji',   tier.emoji);
   setText('end-score',   avg + '점');
   setText('end-summary', state.scenario.teachingPoint);
 
-  const rgba  = {
-    'var(--green)':  'rgba(34,197,94,',
-    'var(--blue)':   'rgba(59,130,246,',
-    'var(--yellow)': 'rgba(245,158,11,',
-    'var(--red)':    'rgba(239,68,68,',
-  }[tColor] || 'rgba(99,102,241,';
   const badge = $('end-label-badge');
-  badge.style.background  = rgba + '0.12)';
-  badge.style.borderColor = rgba + '0.35)';
-  badge.style.color       = tColor;
-  badge.textContent       = tLabel;
-  $('end-score').style.color = tColor;
+  badge.style.background  = 'rgba(' + tier.rgb + ',0.16)';
+  badge.style.borderColor = 'rgba(' + tier.rgb + ',0.55)';
+  badge.style.color       = tier.text;
+  badge.textContent       = tier.label;
+  $('end-score').style.color = tier.text;
 
   // ── 항목별 집계 (그 항목을 채점한 턴만 분모로 삼는다) ──
   var catSum  = { empathy: 0, solution: 0, fact: 0, followup: 0 };
@@ -1229,8 +1335,9 @@ function showEndScreen() {
     var tr = turnRubric(state.scenario.turns[i]);
     if (tr.free) return;   /* 요구 요소가 없는 턴은 집계에서 제외 */
     var A = analyzeAll(h.teacherInput || '', state.scenario.turns[i]);
+    var fl = floorRatioFor(h.teacherInput || '');
     tr.items.forEach(function(it) {
-      var e = itemEarned(A[it.key], it);
+      var e = itemEarned(A[it.key], it, fl);
       catSum[it.key] += it.max > 0 ? Math.round(e / it.max * 100) : 0;
       catN[it.key]   += 1;
       if (e > 0) catHits[it.key].push(i + 1);
@@ -1272,13 +1379,14 @@ function showEndScreen() {
         var tr = turnRubric(turn);
         var myText = h.teacherInput || '';
         var A = analyzeAll(myText, turn);
+        var fl = floorRatioFor(myText);
         var breakdown = [];
         var lengthBonus = (myText.length >= 60) ? 5 : 0;
         if (!tr.free) {
           tr.items.forEach(function(it) {
             var a = A[it.key], sg = a.core.concat(a.extra);
             breakdown.push({ key: it.key, label: it.label, icon: it.icon,
-              max: it.max, earned: itemEarned(a, it),
+              max: it.max, earned: itemEarned(a, it, fl),
               hitWords: sg.slice(0,4).map(function(s) { return (s.w < 1 ? '≈ ' : '') + s.t; }),
               msgs: buildFeedback(a, it), penalty: false });
           });
@@ -1365,10 +1473,16 @@ function showEndScreen() {
         if (lengthBonus) {
           html += '<div style="padding:7px 14px;background:rgba(99,102,241,.05);border-top:1px solid #1e293b;font-size: 14px;color:#a5b4fc">⭐ 성실도 보너스 +5점 — 충분한 길이의 답변이에요!</div>';
         }
+        var mlen = (turn.modelAnswer || '').length;
+        var capTo = (mlen && myText.length < mlen * 0.3) ? 75
+                  : (mlen && myText.length < mlen * 0.5) ? 90 : 0;
+        if (capTo) {
+          html += '<div style="padding:7px 14px;background:rgba(148,163,184,.06);border-top:1px solid #1e293b;font-size: 13px;color:#8294a7;line-height:1.6">⃝ 모범 답변보다 짧아 이 턴의 상한이 ' + capTo + '점으로 적용됐습니다.</div>';
+        }
         /* 팁 */
         if (turn.tip) {
           var done = sc >= 70;
-          var tipTxt = String(turn.tip).replace(/^\s*[💡\uD83D\uDCA1]\s*/, '');
+          var tipTxt = String(turn.tip).replace(/^[^가-힣A-Za-z0-9(\["']+/, '');
           html += '<div style="padding:8px 14px;background:#0a1628;border-top:1px solid #334155;font-size: 14px;line-height:1.55;color:' + (done ? '#86efac' : '#8294a7') + '">';
           html += (done ? '✅ 이 턴의 학습 포인트 — 잘 지키셨습니다. ' : '💡 이 턴의 학습 포인트 — ');
           html += escHtml(tipTxt) + '</div>';
